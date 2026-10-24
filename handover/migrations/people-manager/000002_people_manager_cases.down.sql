@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS dg_committee_members;
+DROP TABLE IF EXISTS er_settings;
+DROP TABLE IF EXISTS er_letters;
+DROP TABLE IF EXISTS er_case_log;
+DROP TABLE IF EXISTS er_case_step_completions;
+ALTER TABLE IF EXISTS manager_requests DROP CONSTRAINT IF EXISTS fk_manager_requests_case;
+DROP TABLE IF EXISTS er_cases;
+DROP TABLE IF EXISTS manager_request_messages;
+DROP TABLE IF EXISTS manager_requests;
+DROP TABLE IF EXISTS er_case_types;
+DROP TABLE IF EXISTS guidance_topics;

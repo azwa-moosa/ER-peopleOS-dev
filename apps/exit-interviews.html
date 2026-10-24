@@ -1,0 +1,365 @@
+<title>Exit Interviews</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>/* Layout: app bar with Staff|HR toggle, tab row, single content column (list + detail split on wide screens) */
+:root{
+  --bg:#f6f4f4; --surface:#ffffff; --surface-2:#f0ecec; --line:#e2dbdb; --ink:#1a1416; --muted:#6b5f62;
+  --red:#c8102e; --red-ink:#ffffff; --red-soft:#fbe9ec; --black:#1a1416;
+  --ok:#1d7a46; --ok-soft:#e3f3e9; --warn:#a15c00; --warn-soft:#fbf0dc; --info:#355c9a; --info-soft:#e6edf8; --grey-soft:#ece8e8;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Public Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#1a1416}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{background:#1a1416;color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;border-bottom:3px solid #c8102e}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{width:36px;height:36px;border-radius:6px;background:#c8102e;display:grid;place-items:center;font:700 15px var(--f-display);flex:none}
+.app{font:700 18px/1.2 var(--f-display);letter-spacing:.01em}
+.sub{font-size:12px;color:#c9bcbf;letter-spacing:.04em;text-transform:uppercase}
+.toggle{display:flex;background:#2e2629;border-radius:999px;padding:3px}
+.toggle button{border:0;background:transparent;color:#d8cdd0;font:600 14px var(--f-body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:#c8102e;color:#fff}
+.toggle button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.who{font-size:12px;color:#c9bcbf;width:100%;display:flex;gap:6px;flex-wrap:wrap}
+.who b{color:#fff;font-weight:600}
+.proto{background:var(--surface-2);color:var(--muted);font-size:12.5px;border-bottom:1px solid var(--line)}
+.proto .wrap{padding-block:6px}
+.tabs{border-bottom:1px solid var(--line);background:var(--surface)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:12px 12px 10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+main .wrap{padding-block:20px 48px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h2{font-size:21px} h3{font-size:16px}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.mono{font-family:var(--f-mono);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.card:hover{border-color:var(--red)}
+.card[aria-current="true"]{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.card .t{font-weight:700}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--surface-2)}
+.row[aria-current="true"]{background:var(--red-soft)}
+.row .t{font-weight:600;min-width:0}
+.row .m{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-new{background:var(--info-soft);color:var(--info)}
+.s-prog{background:var(--warn-soft);color:var(--warn)}
+.s-need{background:var(--red-soft);color:var(--red)}
+.s-done{background:var(--ok-soft);color:var(--ok)}
+.s-off{background:var(--grey-soft);color:var(--muted)}
+label{font-weight:600;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+.hint{font-weight:400;color:var(--muted);font-size:12.5px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+textarea{min-height:90px;resize:vertical}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:500}
+.check input{width:auto;margin-top:3px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 10px;font-size:13px}
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:14px}
+dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.thread{display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 12px;border-radius:8px;background:var(--surface-2);max-width:90%;font-size:14px}
+.msg.me{align-self:flex-end;background:var(--red-soft)}
+.msg.note{background:var(--warn-soft);border:1px dashed var(--warn);max-width:100%}
+.msg .by{font-size:12px;color:var(--muted);margin-bottom:2px}
+.callout{border-left:3px solid var(--red);background:var(--red-soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:14px}
+.callout.info{border-color:var(--info);background:var(--info-soft)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:minmax(110px,180px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13.5px}
+.bar-track{height:12px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:var(--red);border-radius:3px}
+.bar-row .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .n{font:700 26px var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.letter{background:#fff;color:#1a1416;border:1px solid var(--line);border-radius:4px;padding:28px;font-family:Georgia,"Times New Roman",serif;font-size:14.5px;line-height:1.6;display:flex;flex-direction:column;gap:12px}
+.letter .lh{display:flex;justify-content:space-between;border-bottom:2px solid #c8102e;padding-bottom:8px;font-family:var(--f-display);font-size:13px}
+.letter .locked{background:#f3f0f0;border-radius:3px;padding:0 3px}
+.letter textarea{font:inherit;color:#1a1416;background:#fff8e6;border:1px dashed #a15c00}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.scrim{position:fixed;inset:0;background:rgba(10,6,8,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.dialog{background:var(--surface);border-radius:10px;max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+.stars{display:flex;gap:4px}
+.stars button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:36px;height:36px;cursor:pointer;font-weight:700;color:var(--ink)}
+.stars button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.tag[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.card,.row,.btn{transition:border-color .15s,background .15s}}
+.linkbtn{background:none;border:0;padding:0;color:var(--red);font:inherit;text-decoration:underline;cursor:pointer}
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 12px;border-top:1px solid var(--line);font-size:14px;align-items:center}
+.step:first-child{border-top:0}
+.stage{display:flex;gap:4px;flex-wrap:wrap}
+.stage span{font-size:12px;padding:4px 10px;border-radius:4px;background:var(--surface-2);color:var(--muted);font-weight:600}
+.stage span.on{background:var(--ink);color:var(--surface)}
+.stage span.done{background:var(--ok-soft);color:var(--ok)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);margin:0 4px 4px 0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.filters label{min-width:150px;flex:1}
+.fields > .btns{align-self:end}
+.viewnote{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.vchip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--muted)}
+.subtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.subtoggle button{border:0;background:none;padding:5px 12px;border-radius:999px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
+.subtoggle button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+</style>
+<header class="bar"><div class="wrap">
+  <div class="brand"><span class="mark" aria-hidden="true">EX</span><div><div class="app">Exit Interviews</div><div class="sub">People &amp; Culture · Exit feedback</div></div></div>
+  <div class="toggle" role="group" aria-label="Switch view"><button type="button" data-view="staff" aria-pressed="true">Staff</button><button type="button" data-view="manager" aria-pressed="false">Manager</button><button type="button" data-view="hr" aria-pressed="false">HR</button></div>
+  <div class="who" id="who"></div>
+</div></header>
+<div class="proto"><div class="wrap"><a class="linkbtn" href="../index.html">All apps</a> · Prototype with sample data for the CR review. Not connected to ESS or HRIS. Changes are kept in this browser only. <button type="button" class="linkbtn" data-act="resetData">Reset sample data</button></div></div>
+<nav class="tabs" role="tablist" id="tabs"><div class="wrap"></div></nav>
+<main id="main"><div class="wrap"></div></main>
+<div id="modal"></div><div id="toast" role="status" aria-live="polite" hidden></div>
+<script>
+// Shared shell: Staff|HR toggle, tabs, actions, modal, toast
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const UI = { view: 'staff', tab: null };
+const VIEW_NAMES = { staff: 'Staff', manager: 'Manager', hr: 'HR' };
+const pill = (status) => `<span class="pill ${APP.statusClass[status] || 's-off'}">${esc(status)}</span>`;
+const today = new Date();
+const fmtDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString(); };
+const ageDays = d => Math.max(0, Math.round((today - new Date(d)) / 86400000));
+// Reference numbers: <PREFIX>/<YEAR>/<4-digit sequence>, sequential per prefix and year, never reused or edited
+function makeRef(prefix) {
+  S.counters = S.counters || {};
+  const n = (S.counters[prefix] = (S.counters[prefix] ?? (APP.refBase?.[prefix] || 0)) + 1);
+  return `${prefix}/${today.getFullYear()}/${String(n).padStart(4, '0')}`;
+}
+// Working days: Maldives weekend is Friday and Saturday
+function addWorkDays(from, n) {
+  const d = new Date(from); let added = 0;
+  while (added < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 5 && w !== 6) added++; }
+  return d.toISOString();
+}
+function duePill(due, doneAt) {
+  if (doneAt) return `<span class="pill s-done">Done ${fmtDate(doneAt)}</span>`;
+  const days = Math.round((new Date(due) - today) / 86400000);
+  if (days < 0) return `<span class="pill s-need">Overdue ${-days} d</span>`;
+  if (days <= 2) return `<span class="pill s-prog">Due ${days === 0 ? 'today' : 'in ' + days + ' d'}</span>`;
+  return `<span class="pill s-off">Due ${fmtDate(due)}</span>`;
+}
+const STORE_KEY = () => `bml-pc-proto-v3-${APP.key}`;
+function save() { try { localStorage.setItem(STORE_KEY(), JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }
+function loadSaved() { try { const v = localStorage.getItem(STORE_KEY()); if (v) Object.assign(S, JSON.parse(v)); } catch (e) { /* storage unavailable */ } }
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function openModal(html) { $('#modal').innerHTML = `<div class="scrim" data-act="closeModalBg"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal input, #modal textarea, #modal select, #modal button'); f && f.focus(); }
+function closeModal() { $('#modal').innerHTML = ''; }
+
+function render() {
+  if (!UI.tab) UI.tab = Object.fromEntries(Object.entries(APP.tabs).map(([k, v]) => [k, v[0][0]]));
+  document.querySelectorAll('.toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === UI.view)));
+  $('#who').innerHTML = APP.who[UI.view];
+  $('#tabs .wrap').innerHTML = APP.tabs[UI.view].map(([id, label]) => {
+    const n = APP.badge ? APP.badge(UI.view, id) : '';
+    return `<button role="tab" aria-selected="${UI.tab[UI.view] === id}" data-act="tab" data-id="${id}">${esc(label)}${n ? ` (${n})` : ''}</button>`;
+  }).join('');
+  $('#main .wrap').innerHTML = APP.views[UI.view][UI.tab[UI.view]]();
+  save();
+}
+
+const ACTIONS = {
+  tab: d => { UI.tab[UI.view] = d.id; render(); window.scrollTo({ top: 0 }); },
+  closeModal: () => closeModal(),
+  resetData: () => { try { localStorage.removeItem(STORE_KEY()); } catch (e) {} location.reload(); },
+  closeModalBg: (d, el, e) => { if (e.target === el) closeModal(); },
+};
+
+document.addEventListener('click', e => {
+  const v = e.target.closest('.toggle button');
+  if (v) { UI.view = v.dataset.view; render(); window.scrollTo({ top: 0 }); toast(`Switched to ${VIEW_NAMES[v.dataset.view]} view`); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const fn = ACTIONS[a.dataset.act] || APP.actions[a.dataset.act];
+  if (fn) { fn(a.dataset, a, e); }
+});
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-form]');
+  if (!f) return;
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f, e.submitter).entries());
+  APP.forms[f.dataset.form](data, f);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Exit Interviews — leaver questionnaire and HR follow-up
+const STAFF = { name: 'Hussain Zahir', id: 'EMP 07215', title: 'Officer', dept: 'Cards & Payments', lwd: '2026-11-12' };
+const MGR = { name: 'Shifana Adam', title: 'Head of Cards Operations', div: 'Cards & Payments' };
+const HR_ME = 'Mariyam Shifa (HR)';
+const REASONS = ['Career growth elsewhere', 'Pay and benefits', 'Relationship with manager', 'Workload', 'Further study', 'Relocation or family', 'Retirement', 'Other'];
+const THEMES = ['Pay', 'Career growth', 'Manager', 'Workload', 'Recognition', 'Training', 'Culture'];
+const S = {
+  version: 3,
+  questions: [
+    { id: 'q1', type: 'multi', text: 'What are your main reasons for leaving?', active: true },
+    { id: 'q2', type: 'rating', text: 'I felt valued for the work I did.', active: true },
+    { id: 'q3', type: 'rating', text: 'My manager supported my development.', active: true },
+    { id: 'q4', type: 'rating', text: 'My workload was manageable.', active: true },
+    { id: 'q5', type: 'rating', text: 'I would recommend the Bank as a place to work.', active: true },
+    { id: 'q6', type: 'text', text: 'What one change would have made you stay?', active: true },
+    { id: 'q7', type: 'text', text: 'Anything else you would like HR to know?', active: true },
+  ],
+  leavers: [
+    { ref: 'EX/2026/0044', id: 'EMP 07215', name: STAFF.name, title: STAFF.title, div: 'Cards & Payments', mgr: MGR.name, lwd: STAFF.lwd, status: 'Invited', invited: daysAgo(2), answers: {}, call: false, share: false, notes: [], themes: [], actions: [] },
+    { ref: 'EX/2026/0041', id: 'EMP 06120', name: 'Mariyam Sana', title: 'Senior Officer', div: 'Retail Banking', mgr: 'Ahmed Naseer', lwd: '2026-10-30', status: 'Completed', invited: daysAgo(12), submitted: daysAgo(4), call: true, share: false,
+      answers: { q1: ['Career growth elsewhere', 'Pay and benefits'], q2: 3, q3: 2, q4: 3, q5: 4, q6: 'A clear path to a team lead role. I asked twice and was told to wait.', q7: 'My team was great.' }, notes: [{ by: HR_ME, t: 'Call held 21 Oct. Was offered a supervisor role at another bank with 25% more pay.' }], themes: ['Career growth', 'Pay'], actions: [{ t: 'Share promotion-path feedback with Retail Banking head', owner: 'ER & Engagement Manager', due: '2026-11-15', done: false }] },
+    { ref: 'EX/2026/0042', id: 'EMP 09017', name: 'Zaid Manik', title: 'Senior Officer', div: 'Cards & Payments', mgr: MGR.name, lwd: '2026-11-02', status: 'Completed', invited: daysAgo(10), submitted: daysAgo(5), call: false, share: true,
+      answers: { q1: ['Workload', 'Career growth elsewhere'], q2: 2, q3: 3, q4: 1, q5: 3, q6: 'Cover for the chargeback desk during leave, so one person is not doing two jobs.', q7: '' }, notes: [], themes: ['Workload'], actions: [{ t: 'Set up a cover rota for the chargeback desk', owner: `${MGR.name} (line manager)`, ownerType: 'manager', due: '2026-11-20', done: false }] },
+    { ref: 'EX/2026/0043', id: 'EMP 08833', name: 'Ali Shareef', title: 'Analyst', div: 'Risk', mgr: 'Head of Market Risk', lwd: '2026-11-05', status: 'In progress', invited: daysAgo(6), answers: { q1: ['Further study'] }, call: false, share: false, notes: [], themes: [], actions: [] },
+    { ref: 'EX/2026/0039', id: 'EMP 04471', name: 'Aminath Rizna', title: 'Officer', div: 'Retail Banking', mgr: 'Ahmed Naseer', lwd: '2026-10-22', status: 'No response', invited: daysAgo(20), answers: {}, call: false, share: false, notes: [], themes: [], actions: [] },
+  ],
+  sel: null, editQ: null,
+};
+const statusClass = { 'Invited': 's-new', 'In progress': 's-prog', 'Completed': 's-done', 'No response': 's-need', Active: 's-done', Retired: 's-off' };
+const me = () => S.leavers.find(l => l.id === STAFF.id);
+const qById = id => S.questions.find(q => q.id === id);
+
+function qField(q, a) {
+  if (q.type === 'multi') return `<fieldset class="panel" style="padding:12px;gap:6px"><legend class="small" style="font-weight:600">${esc(q.text)}</legend><div class="fields" style="gap:6px">${REASONS.map(r => `<label class="check"><input type="checkbox" name="${q.id}" value="${esc(r)}" ${(a || []).includes(r) ? 'checked' : ''}> ${esc(r)}</label>`).join('')}</div></fieldset>`;
+  if (q.type === 'rating') return `<fieldset class="panel" style="padding:12px;gap:8px"><legend class="small" style="font-weight:600">${esc(q.text)}</legend><span class="hint">1 = strongly disagree · 5 = strongly agree</span><div class="tags">${[1, 2, 3, 4, 5].map(n => `<label class="check"><input type="radio" name="${q.id}" value="${n}" ${+a === n ? 'checked' : ''}> ${n}</label>`).join('')}<label class="check small"><input type="radio" name="${q.id}" value="" ${a === '' ? 'checked' : ''}> Prefer not to say</label></div></fieldset>`;
+  return `<label>${esc(q.text)}<textarea id="x-${q.id}" name="${q.id}">${esc(a || '')}</textarea></label>`;
+}
+function staffForm() {
+  const l = me();
+  if (l.status === 'Completed') return `<div class="panel"><h2>Thank you, ${esc(STAFF.name.split(' ')[0])}</h2><p>Your exit feedback was submitted on ${fmtDate(l.submitted)}. Reference <span class="mono">${l.ref}</span>. ${l.call ? 'HR will contact you to arrange a conversation before your last day.' : ''}</p><p class="muted small">Your answers are used in reports only in groups of five or more people.</p></div>`;
+  const active = S.questions.filter(q => q.active);
+  return `<div class="callout info">You are invited to share exit feedback before your last working day, <b>${fmtDate(l.lwd)}</b>. It takes about 8 minutes. You can save and come back.</div>
+  <form class="panel" data-form="exitForm" id="exit-form"><h2>Exit questionnaire</h2>
+    ${active.map(q => qField(q, l.answers[q.id])).join('')}
+    <label class="check"><input type="checkbox" name="call" ${l.call ? 'checked' : ''}> I would like a conversation with HR before I leave.</label>
+    <label class="check"><input type="checkbox" name="share" ${l.share ? 'checked' : ''}> My line manager may see a summary of my main reasons for leaving and what would have kept me. <span class="hint">Off unless you tick it.</span></label>
+    <div class="btns"><button class="btn primary" name="go" value="submit">Submit feedback</button><button class="btn" name="go" value="save">Save and finish later</button></div>
+  </form>`;
+}
+
+function mgrTeam() {
+  const team = S.leavers.filter(l => l.mgr === MGR.name);
+  const myActions = team.flatMap(l => l.actions.map((a, i) => ({ l, a, i }))).filter(x => x.a.ownerType === 'manager');
+  return `<div class="head"><div><h2>Team leavers</h2><p class="muted">People leaving your team. You see a summary of their feedback only when they chose to share it with you.</p></div></div>
+  <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Name</th><th>Last day</th><th>Exit feedback</th></tr></thead><tbody>${team.map(l => `<tr><td class="mono">${l.ref}</td><td>${esc(l.name)}<br><span class="small muted">${esc(l.title)}</span></td><td>${fmtDate(l.lwd)}</td><td>${l.status === 'Completed' ? (l.share ? '<span class="pill s-done">Shared with you</span>' : '<span class="pill s-off">Completed, not shared</span>') : '<span class="pill s-prog">Not completed yet</span>'}</td></tr>`).join('')}</tbody></table></div>
+  ${team.filter(l => l.status === 'Completed' && l.share).map(l => `<div class="panel"><div class="head"><div><h3>${esc(l.name)}: shared summary</h3><p class="mono muted">${l.ref} · submitted ${fmtDate(l.submitted)}</p></div></div>
+    <dl class="kv"><dt>Main reasons</dt><dd>${(l.answers.q1 || []).map(esc).join(', ') || '–'}</dd><dt>What would have kept them</dt><dd>${esc(l.answers.q6 || '–')}</dd></dl>
+    <p class="small muted">Ratings and other comments stay with HR and appear only in group reports of five or more.</p></div>`).join('')}
+  <div class="panel"><h3>Actions assigned to you${myActions.filter(x => !x.a.done).length ? ` (${myActions.filter(x => !x.a.done).length} open)` : ''}</h3>
+  ${myActions.length ? myActions.map(({ l, a, i }) => `<div class="panel" style="background:var(--surface-2)"><div class="head"><div><b>${esc(a.t)}</b><p class="small muted">From ${l.ref} · due ${fmtDate(a.due)}</p></div>${a.done ? '<span class="pill s-done">Done</span>' : (new Date(a.due) < today ? '<span class="pill s-need">Overdue</span>' : '<span class="pill s-prog">Open</span>')}</div>
+    ${a.done ? (a.doneNote ? `<p class="small">${esc(a.doneNote)}</p>` : '') : `<form data-form="mgrDone" data-id="${l.id}" data-i="${i}" class="fields"><label>What you did<input id="md-${l.id}-${i}" name="note" required></label><div class="btns"><button class="btn primary">Mark done</button></div></form>`}</div>`).join('') : '<p class="muted small">No actions assigned to you.</p>'}</div>`;
+}
+function hrLeavers() {
+  const l = S.leavers.find(x => x.id === S.sel) || S.leavers.find(x => x.status === 'Completed');
+  S.sel = l.id;
+  const count = s => S.leavers.filter(x => x.status === s).length;
+  return `<div class="head"><div><h2>Leavers</h2><p class="muted">${count('Completed')} completed · ${count('In progress') + count('Invited')} open · ${count('No response')} no response</p></div></div>
+  <div class="split"><div class="list">${S.leavers.map(x => `<button class="row" data-act="sel" data-id="${x.id}" aria-current="${x.id === S.sel}"><span class="t">${esc(x.name)}</span>${pill(x.status)}<span class="m"><span class="mono">${x.ref}</span> · ${esc(x.title)}, ${esc(x.div)} · last day ${fmtDate(x.lwd)}</span></button>`).join('')}</div>${hrDetail(l)}</div>`;
+}
+function hrDetail(l) {
+  const answered = l.status === 'Completed';
+  return `<div class="panel"><div class="head"><div><h3>${esc(l.name)}</h3><p class="muted small"><span class="mono">${l.ref}</span> · <span class="mono">${l.id}</span> · ${esc(l.title)}, ${esc(l.div)} · invited ${fmtDate(l.invited)}</p></div>${pill(l.status)}</div>
+    ${!answered ? `<p class="muted">${l.status === 'In progress' ? 'Started, not yet submitted.' : 'No answers yet.'}</p><div class="btns"><button class="btn" data-act="remind" data-id="${l.id}">Send reminder</button></div>` : `
+    <dl class="kv"><dt>Line manager</dt><dd>${esc(l.mgr || '–')}</dd><dt>Conversation</dt><dd>${l.call ? 'Requested' : 'Not requested'}</dd><dt>Share with manager</dt><dd>${l.share ? 'Allowed (summary only)' : 'Not allowed'}</dd></dl>
+    <div class="tablewrap"><table><tbody>${S.questions.filter(q => l.answers[q.id] !== undefined).map(q => `<tr><td style="width:45%" class="muted">${esc(q.text)}</td><td>${Array.isArray(l.answers[q.id]) ? l.answers[q.id].map(esc).join(', ') : q.type === 'rating' ? (l.answers[q.id] === '' ? 'Prefer not to say' : `<b>${l.answers[q.id]}</b> / 5`) : esc(l.answers[q.id])}</td></tr>`).join('')}</tbody></table></div>
+    <div><p class="small" style="font-weight:600;margin-bottom:6px">Themes</p><div class="tags">${THEMES.map(t => `<button class="tag" aria-pressed="${l.themes.includes(t)}" data-act="theme" data-id="${l.id}" data-t="${t}">${t}</button>`).join('')}</div></div>
+    ${l.notes.map(n => `<div class="msg note"><div class="by">Note · ${esc(n.by)}</div>${esc(n.t)}</div>`).join('')}
+    <form data-form="note" data-id="${l.id}" class="fields"><label>Conversation note<textarea id="n-${l.id}" name="t" required></textarea></label><div class="btns"><button class="btn">Add note</button></div></form>
+    <div><p class="small" style="font-weight:600;margin-bottom:6px">Follow-up actions</p>${l.actions.length ? `<div class="tablewrap"><table><thead><tr><th>Action</th><th>Owner</th><th>Due</th><th>Done</th></tr></thead><tbody>${l.actions.map((a, i) => `<tr><td>${esc(a.t)}</td><td>${esc(a.owner)}</td><td>${fmtDate(a.due)}</td><td><input type="checkbox" aria-label="Mark done" data-act="doneAct" data-id="${l.id}" data-i="${i}" ${a.done ? 'checked' : ''}>${a.doneNote ? `<br><span class="small muted">${esc(a.doneNote)}</span>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small">None yet.</p>'}</div>
+    <form data-form="action" data-id="${l.id}" class="fields"><label>New action<input id="ac-t-${l.id}" name="t" required></label><label>Owner<select id="ac-o-${l.id}" name="owner">${[`${l.mgr} (line manager)`, 'People & Culture', `Head of ${l.div}`].map(o => `<option>${esc(o)}</option>`).join('')}</select></label><label>Due<input id="ac-d-${l.id}" type="date" name="due" required></label><div class="btns" style="align-self:end"><button class="btn primary">Add action</button></div></form>`}
+  </div>`;
+}
+function hrQuestions() {
+  const typeLabel = { multi: 'Choose reasons', rating: 'Rating 1–5', text: 'Free text' };
+  return `<div class="head"><div><h2>Questionnaire</h2><p class="muted">Version ${S.version}. Each change publishes a new version; past answers stay linked to the version they answered.</p></div><button class="btn primary" data-act="addQ">Add question</button></div>
+  <div class="tablewrap"><table><thead><tr><th>#</th><th>Question</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody>
+  ${S.questions.map((q, i) => S.editQ === q.id ? `<tr><td>${i + 1}</td><td colspan="4"><form data-form="saveQ" data-id="${q.id}" class="fields"><label>Question<input id="q-text" name="text" value="${esc(q.text)}" required></label><label>Type<select id="q-type" name="type">${Object.entries(typeLabel).map(([k, v]) => `<option value="${k}" ${q.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label><div class="btns" style="align-self:end"><button class="btn primary sm">Publish</button><button type="button" class="btn sm" data-act="editQ" data-id="">Cancel</button></div></form></td></tr>`
+    : `<tr><td>${i + 1}</td><td>${esc(q.text)}</td><td class="muted">${typeLabel[q.type]}</td><td>${pill(q.active ? 'Active' : 'Retired')}</td><td><div class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-act="moveQ" data-id="${q.id}" data-d="-1" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>↑</button><button class="btn sm" data-act="moveQ" data-id="${q.id}" data-d="1" aria-label="Move down" ${i === S.questions.length - 1 ? 'disabled' : ''}>↓</button><button class="btn sm" data-act="editQ" data-id="${q.id}">Edit</button><button class="btn sm" data-act="toggleQ" data-id="${q.id}">${q.active ? 'Retire' : 'Restore'}</button></div></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function hrInsights() {
+  const reasons = [['Career growth elsewhere', 21], ['Pay and benefits', 17], ['Further study', 9], ['Relationship with manager', 7], ['Relocation or family', 6], ['Workload', 5], ['Retirement', 3], ['Other', 2]];
+  const max = reasons[0][1];
+  const divs = [['Retail Banking', 18, 3.1, 2.7], ['Operations', 9, 3.4, 3.0], ['Cards & Payments', 6, 3.6, 3.2], ['Risk', 4, null, null], ['Treasury', 2, null, null], ['IT', 7, 3.2, 3.5]];
+  return `<h2>Insights</h2><p class="muted small">Sample figures, January to October 2026, 46 completed questionnaires (61% response rate). Missing ratings are left out, not counted as zero. Groups under 5 are hidden.</p>
+  <div class="panel"><h3>Reasons for leaving</h3><p class="muted small">Leavers can pick more than one reason.</p><div class="bars">${reasons.map(([n, c]) => `<div class="bar-row"><span>${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${c / max * 100}%"></div></div><span class="v">${c}</span></div>`).join('')}</div></div>
+  <div class="tablewrap"><table><thead><tr><th>Division</th><th class="num">Responses</th><th class="num">Felt valued (avg /5)</th><th class="num">Manager support (avg /5)</th></tr></thead><tbody>${divs.map(([d, n, a, b]) => `<tr><td>${d}</td><td class="num">${n}</td>${n < 5 ? '<td class="num muted" colspan="2">Fewer than 5 responses, hidden</td>' : `<td class="num">${a.toFixed(1)}</td><td class="num">${b.toFixed(1)}</td>`}</tr>`).join('')}</tbody></table></div>`;
+}
+
+const APP = {
+  key: 'exit', refBase: { EX: 44 },
+  statusClass,
+  who: { staff: `<span>Signed in as <b>${STAFF.name}</b></span><span>· ${STAFF.title}, ${STAFF.dept} · last day ${fmtDate(STAFF.lwd)}</span>`, manager: `<span>Signed in as <b>${MGR.name}</b></span><span>· ${MGR.title} · line manager of ${STAFF.name}</span>`, hr: `<span>Signed in as <b>${HR_ME}</b></span><span>· People &amp; Culture</span>` },
+  badge: (v, id) => v === 'manager' ? S.leavers.filter(l => l.mgr === MGR.name).flatMap(l => l.actions).filter(a => a.ownerType === 'manager' && !a.done).length : 0,
+  tabs: { staff: [['form', 'Exit feedback']], manager: [['team', 'Team leavers']], hr: [['leavers', 'Leavers'], ['questions', 'Questionnaire'], ['insights', 'Insights']] },
+  views: { staff: { form: staffForm }, manager: { team: mgrTeam }, hr: { leavers: hrLeavers, questions: hrQuestions, insights: hrInsights } },
+  actions: {
+    sel: d => { S.sel = d.id; render(); },
+    remind: d => { toast(`Reminder sent to ${S.leavers.find(l => l.id === d.id).name}`); },
+    theme: d => { const l = S.leavers.find(x => x.id === d.id); l.themes = l.themes.includes(d.t) ? l.themes.filter(t => t !== d.t) : [...l.themes, d.t]; render(); },
+    doneAct: d => { const a = S.leavers.find(x => x.id === d.id).actions[+d.i]; a.done = !a.done; toast(a.done ? 'Action marked done' : 'Action reopened'); },
+    addQ: () => { const id = 'q' + Date.now(); S.questions.push({ id, type: 'text', text: 'New question', active: true }); S.editQ = id; render(); },
+    editQ: d => { S.editQ = d.id || null; render(); },
+    moveQ: d => { const i = S.questions.findIndex(q => q.id === d.id); const j = i + +d.d; [S.questions[i], S.questions[j]] = [S.questions[j], S.questions[i]]; S.version++; render(); toast(`Order changed. Version ${S.version} published`); },
+    toggleQ: d => { const q = qById(d.id); q.active = !q.active; S.version++; render(); toast(q.active ? `Question restored. Version ${S.version}` : `Question retired. Version ${S.version}`); },
+  },
+  forms: {
+    exitForm: (data, f) => {
+      const l = me(); const fd = new FormData(f);
+      S.questions.filter(q => q.active).forEach(q => { l.answers[q.id] = q.type === 'multi' ? fd.getAll(q.id) : (fd.get(q.id) ?? undefined); if (q.type === 'rating' && fd.get(q.id) !== null && fd.get(q.id) !== '') l.answers[q.id] = +fd.get(q.id); });
+      Object.keys(l.answers).forEach(k => l.answers[k] === undefined && delete l.answers[k]);
+      l.call = !!data.call; l.share = !!data.share;
+      if (data.go === 'save') { l.status = 'In progress'; toast('Saved. You can finish later'); }
+      else { l.status = 'Completed'; l.submitted = today.toISOString(); toast('Feedback submitted'); }
+      render(); window.scrollTo({ top: 0 });
+    },
+    note: (data, f) => { S.leavers.find(x => x.id === f.dataset.id).notes.push({ by: HR_ME, t: data.t }); render(); toast('Note added'); },
+    action: (data, f) => { const l = S.leavers.find(x => x.id === f.dataset.id); const toMgr = data.owner.endsWith('(line manager)'); l.actions.push({ ...data, ownerType: toMgr ? 'manager' : 'other', done: false }); render(); toast(toMgr ? 'Action added and sent to the line manager' : 'Action added'); },
+    mgrDone: (data, f) => { const a = S.leavers.find(x => x.id === f.dataset.id).actions[+f.dataset.i]; a.done = true; a.doneNote = `${MGR.name}, ${fmtDate(today)}: ${data.note}`; render(); toast('Marked done. HR can see it'); },
+    saveQ: (data, f) => { Object.assign(qById(f.dataset.id), data); S.editQ = null; S.version++; render(); toast(`Version ${S.version} published`); },
+  },
+};
+
+loadSaved();
+render();
+</script>

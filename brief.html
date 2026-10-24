@@ -1,0 +1,511 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>People &amp; Culture Apps Brief</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: dark hero, sticky section nav, single column of sections; app explorer = tab row + split (flow | detail) */
+:root{
+  --bg:#f6f4f4; --surface:#ffffff; --surface-2:#f0ecec; --line:#e2dbdb; --ink:#1a1416; --muted:#6b5f62;
+  --red:#c8102e; --red-ink:#ffffff; --red-soft:#fbe9ec;
+  --staff:#355c9a; --staff-soft:#e6edf8; --hr:#c8102e; --hr-soft:#fbe9ec; --sys:#6b5f62; --sys-soft:#ece8e8; --lead:#a15c00; --lead-soft:#fbf0dc; --ok:#1d7a46; --ok-soft:#e3f3e9;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Public Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20;
+  --staff:#8fb3ef; --staff-soft:#1c2840; --hr:#ef4f66; --hr-soft:#3a1a20; --sys:#a8999d; --sys-soft:#2c2528; --lead:#f0b35a; --lead-soft:#3a2a12; --ok:#6fd39a; --ok-soft:#173326; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20;
+  --staff:#8fb3ef; --staff-soft:#1c2840; --hr:#ef4f66; --hr-soft:#3a1a20; --sys:#a8999d; --sys-soft:#2c2528; --lead:#f0b35a; --lead-soft:#3a2a12; --ok:#6fd39a; --ok-soft:#173326; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#1a1416}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px} .mono{font-family:var(--f-mono);font-size:13px}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+a{color:var(--red)}
+
+/* hero (always dark: the bank's black) */
+.hero{background:#1a1416;color:#fff;border-bottom:4px solid #c8102e}
+.hero .wrap{padding-block:40px 32px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:32px;align-items:end}
+@media (max-width:820px){.hero .wrap{grid-template-columns:minmax(0,1fr)}}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#d9a3ad;font-weight:600}
+.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.05;margin-top:10px;font-weight:800}
+.hero p.lead{color:#d8cdd0;font-size:17px;margin-top:14px;max-width:60ch}
+.kpi{border:1px solid #3a3034;border-radius:8px;padding:16px;background:#221b1e}
+.kpi .k{font-size:12px;color:#c9bcbf;text-transform:uppercase;letter-spacing:.06em}
+.kpi p{color:#fff;margin-top:6px;font-weight:600}
+.counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.counts div{background:#2b2326;border-radius:6px;padding:10px}
+.counts b{display:block;font:800 26px var(--f-display);color:#ff5b73}
+.counts span{font-size:12px;color:#d8cdd0}
+
+nav.sec{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.sec .wrap{display:flex;gap:2px;overflow-x:auto}
+nav.sec a{color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;padding:12px 12px 10px;border-bottom:3px solid transparent;white-space:nowrap}
+nav.sec a:hover{color:var(--ink)}
+nav.sec a.on{color:var(--ink);border-bottom-color:var(--red)}
+
+section{padding-block:44px 8px;scroll-margin-top:52px}
+.sh{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.sh h2{font-size:clamp(22px,3vw,30px)}
+.sh p{color:var(--muted);max-width:65ch;margin-top:6px}
+.num{font:700 12px var(--f-mono);color:var(--red);letter-spacing:.06em}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+
+/* objectives */
+.obj{display:flex;flex-direction:column;gap:10px}
+.obj .top{display:flex;gap:10px;align-items:center}
+.mark{width:34px;height:34px;border-radius:6px;background:#c8102e;color:#fff;display:grid;place-items:center;font:700 13px var(--f-display);flex:none}
+.obj h3{font-size:17px}
+.obj .goal{font-weight:600}
+.obj ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.measure{font-size:13px;border-top:1px dashed var(--line);padding-top:8px;color:var(--muted)}
+.measure b{color:var(--ink)}
+
+/* legend + chips */
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.a-staff{--c:var(--staff);--cs:var(--staff-soft)} .a-hr{--c:var(--hr);--cs:var(--hr-soft)} .a-sys{--c:var(--sys);--cs:var(--sys-soft)} .a-lead{--c:var(--lead);--cs:var(--lead-soft)}
+
+/* explorer */
+.apptabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.apptabs button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600}
+.apptabs button[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.apptabs .mark{width:26px;height:26px;font-size:11px}
+.viewtoggle{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:3px;border:1px solid var(--line)}
+.viewtoggle button{border:0;background:none;padding:6px 16px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--muted)}
+.viewtoggle button[aria-pressed="true"]{background:#c8102e;color:#fff}
+.explorer{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.explorer{grid-template-columns:minmax(0,1fr)}}
+.flow{display:flex;flex-direction:column;gap:0}
+.step{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;text-align:left;border:0;background:none;padding:0;cursor:pointer;position:relative}
+.step .dot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:700 15px var(--f-display);background:var(--cs);color:var(--c);border:2px solid var(--c);position:relative;z-index:1}
+.step:not(:last-child)::after{content:"";position:absolute;left:21px;top:44px;bottom:0;width:2px;background:var(--line)}
+.step .body{padding:4px 0 18px;min-width:0}
+.step .who{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.step .t{font-weight:700;font-size:15.5px}
+.step .d{font-size:13.5px;color:var(--muted)}
+.step.dim{opacity:.38}
+.step[aria-current="true"] .dot{background:var(--c);color:#fff}
+.step[aria-current="true"] .t{color:var(--c)}
+.step:hover .t{text-decoration:underline}
+.detail{display:flex;flex-direction:column;gap:12px;position:sticky;top:64px}
+@media (max-width:900px){.detail{position:static}}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;margin:0;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.ref{display:inline-block;font-family:var(--f-mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 7px}
+.reqs{display:flex;flex-direction:column;gap:6px;font-size:13.5px;max-height:340px;overflow:auto;padding-right:4px}
+.reqs div{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px}
+.reqs b{font-family:var(--f-mono);font-size:12px;color:var(--red);padding-top:2px}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;font:600 14px var(--f-body);border-radius:6px;padding:8px 13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;cursor:pointer}
+.btn.primary{background:#c8102e;border-color:#c8102e;color:#fff}
+.btn:hover{border-color:var(--ink)}
+
+/* svg diagrams */
+.diagram{overflow-x:auto}
+.diagram svg{display:block;min-width:640px;width:100%;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+.node rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.node.hl rect{stroke:var(--red);stroke-width:2.5}
+.edge{stroke:var(--muted);stroke-width:1.6;fill:none}
+.edge.hl{stroke:var(--red);stroke-width:2.5}
+
+/* routing */
+.route-controls{display:flex;flex-direction:column;gap:12px}
+.route-controls label{font-weight:600;font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+select,input[type=date]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.check{flex-direction:row!important;align-items:center;gap:8px!important;font-weight:500!important}
+.check input{width:auto}
+.recips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.recips{grid-template-columns:minmax(0,1fr)}}
+.recip{border:2px dashed var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;transition:all .2s}
+.recip.on{border-style:solid;border-color:var(--red);background:var(--red-soft)}
+.recip .st{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.recip.on .st{color:var(--red)}
+.recip h4{font-size:16px}
+.note{font-size:13px;border-left:3px solid var(--red);background:var(--red-soft);padding:8px 12px;border-radius:0 6px 6px 0}
+.note.info{border-color:var(--staff);background:var(--staff-soft)}
+
+/* lifecycle */
+.stages{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+@media (max-width:700px){.stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stages button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stages button .i{font:700 11px var(--f-mono);color:var(--muted)}
+.stages button .n{font-weight:700;font-size:14px}
+.stages button.opt{border-style:dashed}
+.stages button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.stages button[aria-pressed="true"] .i{color:#ff8a9b}
+.letters{display:flex;gap:6px;flex-wrap:wrap}
+.letter-chip{font-size:12.5px;border-radius:999px;padding:3px 10px;background:var(--hr-soft);color:var(--hr);font-weight:600}
+
+/* timelines */
+.tl{display:flex;flex-direction:column;gap:14px}
+.gantt{display:flex;flex-direction:column;gap:12px}
+.g-row{display:grid;grid-template-columns:minmax(90px,140px) minmax(0,1fr) 120px;gap:12px;align-items:center;font-size:13.5px}
+@media (max-width:520px){.g-row{grid-template-columns:minmax(0,1fr) 110px}.g-track{grid-column:1/-1;grid-row:2}}
+.g-track{height:14px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.g-bar{height:100%;background:var(--red);border-radius:4px}
+.g-l{font-weight:600}
+.g-d{font-size:12.5px;line-height:1.3}
+.tl-track{position:relative;height:56px;margin:8px 4px 28px}
+.tl-line{position:absolute;left:0;right:0;top:20px;height:4px;background:var(--surface-2);border-radius:2px}
+.tl-pt{position:absolute;top:10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;width:110px}
+.tl-pt i{width:22px;height:22px;border-radius:50%;background:var(--red);border:3px solid var(--surface);box-shadow:0 0 0 2px var(--red)}
+.tl-pt.start i{background:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.tl-pt span{font-size:11.5px;text-align:center;line-height:1.2}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.pill.yes{background:var(--red-soft);color:var(--red)} .pill.ok{background:var(--ok-soft);color:var(--ok)}
+
+/* reference generator */
+.refgen{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bigref{font:600 clamp(22px,4vw,34px) var(--f-mono);letter-spacing:.02em}
+.bigref .p{color:var(--red)} .bigref .y{color:var(--muted)}
+
+/* status board */
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.status ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.status h3{font-size:16px;display:flex;align-items:center;gap:8px}
+.dotc{width:10px;height:10px;border-radius:50%;display:inline-block}
+footer{padding-block:40px 60px;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:no-preference){.recip,.step .dot{transition:all .2s}}
+</style>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <p class="eyebrow">People &amp; Culture · Employee Relations · CR review</p>
+    <h1>Four apps that move HR service from email and spreadsheets into ESS</h1>
+    <p class="lead">Each app has its own CR, runs on OneUI under Employee Self Service, and has three views: Staff, Manager and HR, each showing only what that person needs. Explore what each app does, who does what, and the controls behind it.</p>
+  </div>
+  <div class="kpi">
+    <p class="k">KPI this delivers</p>
+    <p>Transform HR Service Delivery through Digital Transformation – Process Optimization &amp; Automation</p>
+    <div class="counts"><div><b>4</b><span>apps</span></div><div><b>4</b><span>CRs</span></div><div><b>3</b><span>views each</span></div><div><b>7</b><span>reference series</span></div></div>
+  </div>
+</div></header>
+
+<nav class="sec" aria-label="Sections"><div class="wrap" id="secnav">
+  <a href="#objectives">Objectives</a><a href="#apps">The four apps</a><a href="#connect">How they connect</a><a href="#routing">Routing</a><a href="#cases">Case lifecycle</a><a href="#timelines">Timelines</a><a href="#refs">Reference numbers</a><a href="#status">Status and decisions</a>
+</div></nav>
+
+<main>
+<section id="objectives"><div class="wrap">
+  <div class="sh"><div><span class="num">01</span><h2>Objectives</h2><p>What each app must achieve, and how we will know it worked. Targets are set with P&amp;C before UAT.</p></div></div>
+  <div class="grid4" id="objgrid"></div>
+</div></section>
+
+<section id="apps"><div class="wrap">
+  <div class="sh"><div><span class="num">02</span><h2>The four apps, step by step</h2><p>Pick an app, then switch between the Staff, Manager and HR views. Steps done by the other views fade back. Select a step to see what happens, the status it sets and the reference number it creates.</p></div>
+    <div class="viewtoggle" role="group" aria-label="View"><button type="button" data-view="staff" aria-pressed="true">Staff</button><button type="button" data-view="manager" aria-pressed="false">Manager</button><button type="button" data-view="hr" aria-pressed="false">HR</button></div></div>
+  <div class="apptabs" role="tablist" id="apptabs"></div>
+  <div class="legend" style="margin-bottom:14px"><span><i class="sw" style="background:var(--staff)"></i>Staff</span><span><i class="sw" style="background:var(--lead)"></i>Manager, Chief or Director</span><span><i class="sw" style="background:var(--hr)"></i>HR</span><span><i class="sw" style="background:var(--sys)"></i>System</span></div>
+  <div class="explorer">
+    <div class="panel"><div class="flow" id="flow"></div></div>
+    <div class="detail" id="detail"></div>
+  </div>
+  <h3 style="margin:22px 0 10px;font-size:18px">What each view sees when something changes</h3>
+  <div class="tablewrap" id="matrix"></div>
+</div></section>
+
+<section id="connect"><div class="wrap">
+  <div class="sh"><div><span class="num">03</span><h2>How the apps connect</h2><p>Four separate apps, but cases and letters flow between them. Select an app to highlight its links.</p></div></div>
+  <div class="panel diagram" id="connectDiagram"></div>
+</div></section>
+
+<section id="routing"><div class="wrap">
+  <div class="sh"><div><span class="num">04</span><h2>Where a report goes, and to whom</h2><p>HR always receives every Employee Voice report and every manager report. The Division Chief and Division Director receive it only when chosen. Try a category.</p></div></div>
+  <div class="grid2">
+    <div class="panel route-controls">
+      <label>Category<select id="rCat"></select></label>
+      <label class="check"><input type="checkbox" id="rChief"> Send to Division Chief</label>
+      <label class="check"><input type="checkbox" id="rDir"> Send to Division Director</label>
+      <label class="check"><input type="checkbox" id="rConf"> Keep my name confidential</label>
+      <label class="check"><input type="checkbox" id="rFormal"> Handle as a formal grievance</label>
+      <div id="rNote"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div class="recips" id="recips"></div>
+      <div class="panel" id="rSummary"></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="cases"><div class="wrap">
+  <div class="sh"><div><span class="num">05</span><h2>Case lifecycle in People Manager</h2><p>A manager report or an Employee Voice report can become an ER case. HR decides. Select a stage to see what happens there and which letters it produces.</p></div></div>
+  <div class="panel diagram" id="intakeDiagram" style="margin-bottom:14px"></div>
+  <div class="stages" id="stages"></div>
+  <div class="panel" id="stageDetail" style="margin-top:12px"></div>
+</div></section>
+
+<section id="timelines"><div class="wrap">
+  <div class="sh"><div><span class="num">06</span><h2>Timebound cases</h2><p>Any case can be a formal grievance or not. Timebound types get due dates in working days (Friday and Saturday excluded). Choose a type and an opening date to see the due dates the apps would set.</p></div></div>
+  <div class="grid2">
+    <div class="panel route-controls">
+      <label>Case type<select id="tType"></select></label>
+      <label>Opened on<input type="date" id="tDate"></label>
+      <p class="small muted">Sample values. HR sets them in Settings to match the Disciplinary Procedure, Grievance Procedure and Sexual Harassment Policy; open cases pick up changes straight away.</p>
+    </div>
+    <div class="panel tl" id="tOut"></div>
+  </div>
+  <div class="tablewrap" style="margin-top:16px"><table id="tTable"></table></div>
+</div></section>
+
+<section id="refs"><div class="wrap">
+  <div class="sh"><div><span class="num">07</span><h2>Reference numbers</h2><p>The system creates every number. It runs in sequence per prefix and year, is never reused and cannot be edited. Letter numbers are given only on issue, so drafts never use one.</p></div></div>
+  <div class="grid2">
+    <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+      <div class="refgen"><label style="font-weight:600;font-size:13.5px;display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px">Record<select id="refSel"></select></label><button class="btn primary" id="refBtn" type="button">Create next number</button></div>
+      <div class="bigref" id="refOut" aria-live="polite"></div>
+      <p class="small muted" id="refWhen"></p>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Prefix</th><th>Used for</th><th>App</th><th>Created when</th></tr></thead><tbody id="refTable"></tbody></table></div>
+  </div>
+</div></section>
+
+<section id="status"><div class="wrap">
+  <div class="sh"><div><span class="num">08</span><h2>Status and decisions</h2><p>What is ready for review now, what P&amp;C needs to decide before build, and what comes later.</p></div></div>
+  <div class="status">
+    <div class="panel"><h3><i class="dotc" style="background:var(--ok)"></i>Ready now</h3><ul>
+      <li>Four CRs, one per app, version 0.3</li><li>Four clickable prototypes with Staff, Manager and HR views</li><li>A package to host the prototypes on our own server</li><li>Developer handover on the OneUI starter kit, with database scripts tested on PostgreSQL</li></ul></div>
+    <div class="panel"><h3><i class="dotc" style="background:var(--red)"></i>Decisions needed</h3><ul>
+      <li>Timelines for each case type, from policy</li><li>D&amp;G Committee composition and quorum</li><li>Wording of 7 reference and 6 disciplinary letters</li><li>Who approves showing a confidential reporter</li><li>Field mapping for the 30 existing cases</li></ul></div>
+    <div class="panel"><h3><i class="dotc" style="background:var(--staff)"></i>Later phase</h3><ul>
+      <li>Microsoft 365: Entra ID sign-in</li><li>Outlook and Teams notices to HR, Chiefs and Directors</li><li>Outlook invites for D&amp;G hearings</li><li>SharePoint storage for case evidence</li></ul></div>
+  </div>
+</div></section>
+</main>
+<footer><div class="wrap">Prepared by People &amp; Culture – Employee Relations. Prototype data is sample only. Figures marked as sample are placeholders until P&amp;C confirms them.</div></footer>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = s => document.querySelector(s);
+const LINK = { proto: { bot: 'https://claude.ai/artifact/SCSAtm1xXqowa93YEdCmxj', voice: 'https://claude.ai/artifact/2hP6Zs8p8bJSsSzyMdJGeC', pm: 'https://claude.ai/artifact/VMvyKExC8XN1FJ8PwnvqtA', exit: 'https://claude.ai/artifact/Cx2WcPvPAmrfPXprtEA3sV' },
+  cr: { bot: 'https://claude.ai/artifact/56WaChhySP8EvXRR6iSkxf', voice: 'https://claude.ai/artifact/4bt2AUETCvZ8fLLFyB4bae', pm: 'https://claude.ai/artifact/RuQvVVcWnuobtvvqMs3a5A', exit: 'https://claude.ai/artifact/TaUoLNc49gF8eLzBK3NoZ2' } };
+const ACTOR = { staff: ['a-staff', 'Staff'], emp: ['a-staff', 'Employee'], mgr: ['a-lead', 'Line manager'], hr: ['a-hr', 'HR'], hr2: ['a-hr', 'Second HR user'], sys: ['a-sys', 'System'], lead: ['a-lead', 'Chief or Director'] };
+
+const APPS = {
+  bot: { mark: 'AB', name: 'Automation Bot', goal: 'Staff get accurate reference letters through ESS without emailing HR.',
+    aims: ['Replace email requests with one tracked request per letter', 'No re-typing of employee facts', 'No letter issued without a second HR check', 'HR maintains templates without IT changes'],
+    measure: 'Turnaround from submission to issue; requests per letter type; letters issued without a correction.',
+    steps: [
+      { a: 'staff', t: 'Choose a letter', d: 'One of seven: Visa, General Employment Record, Academic Excuse, Academic Reference, Release Staff, Job Opportunity, Financial.', status: 'Draft (not yet sent)' },
+      { a: 'staff', t: 'Answer the questions', d: 'Addressee, purpose and dates. Consent if salary or ID number is included.' },
+      { a: 'sys', t: 'Request number created', d: 'The request appears in My Requests. Letters that need endorsement go to the line manager first.', ref: 'PC/RL', status: 'Submitted or Awaiting manager endorsement' },
+      { a: 'mgr', t: 'Endorse (if the letter needs it)', d: 'Release Staff Reference and Academic Excuse: the line manager endorses, or declines with a comment the employee sees. Then it reaches HR.', status: 'Submitted or Declined by manager' },
+      { a: 'hr', t: 'Pick up and draft', d: 'Draft generated from the current template version; name, position, department and joining date come from HRIS.', status: 'In progress' },
+      { a: 'hr', t: 'Ask for information (if needed)', d: 'The request pauses until the employee replies.', status: 'Information needed' },
+      { a: 'hr2', t: 'Second check', d: 'A different HR user checks and approves. The drafter cannot issue their own letter.', status: 'Awaiting check' },
+      { a: 'sys', t: 'Issue', d: 'Letter number assigned and PDF released to the employee.', ref: 'PC/LTR', status: 'Issued' },
+      { a: 'staff', t: 'Download', d: 'The employee downloads the letter from My Requests.' },
+    ],
+    req: { staff: [['AB-S1', 'Choose a letter type from the active list; disciplinary templates never appear.'], ['AB-S2', 'Complete the letter form and give consent where salary or ID is included.'], ['AB-S3', 'Receive a PC/RL reference number on submission.'], ['AB-S4', 'See status: Submitted, In progress, Information needed, Issued, Cancelled.'], ['AB-S5', 'Reply to HR questions within the request.'], ['AB-S6', 'Cancel before HR starts drafting.'], ['AB-S7', 'Download the issued PDF with its PC/LTR number.']],
+      manager: [['AB-M1', 'See team requests waiting for endorsement, with the details the letter needs.'], ['AB-M2', 'Endorse (optional comment) or decline (comment required); employee and HR are told.'], ['AB-M3', 'See team requests: reference, letter, status, date; never contents or salary.'], ['AB-M4', 'Letters needing endorsement reach HR only after endorsement.']],
+      hr: [['AB-H1', 'One queue filtered by letter type, status and age.'], ['AB-H2', 'Draft generated from the current template with HRIS facts.'], ['AB-H3', 'Only editable sections can change; fixed clauses stay locked.'], ['AB-H4', 'Ask the requester for missing information.'], ['AB-H5', 'Second HR user checks; the drafter cannot issue.'], ['AB-H6', 'Issue assigns the letter number and releases the PDF.'], ['AB-H7', 'Add, edit (new version), retire templates and their request forms.'], ['AB-H8', 'Library also holds six HR-only disciplinary templates.'], ['AB-H9', 'Volumes by letter type and turnaround.']] } },
+  voice: { mark: 'EV', name: 'Employee Voice', goal: 'Staff can raise a concern safely and know it will be handled on time.',
+    aims: ['A clear route for concerns, grievances and sexual harassment reports', 'Reporter chooses who receives it; HR always does', 'Confidential reporting, with identity shown only on approval', 'Timebound handling set by HR to match policy'],
+    measure: 'Time to acknowledge; share closed on time against policy; overdue reports; reporter rating after closure.',
+    steps: [
+      { a: 'staff', t: 'Choose a category', d: 'Workplace behaviour, sexual harassment, health and safety, policy concern, workload, suggestion. HR maintains the list.' },
+      { a: 'staff', t: 'Choose recipients', d: 'HR always. Division Chief and Director if ticked. Sexual harassment goes to HR only.' },
+      { a: 'staff', t: 'Name and handling', d: 'Share my name, or keep it confidential. Optionally ask for a formal grievance.' },
+      { a: 'sys', t: 'Report number created', d: 'Recipients get a notice. A confidential reporter is never named to them.', ref: 'EV', status: 'Received' },
+      { a: 'lead', t: 'Chief or Director sees it', d: 'Only when chosen. In their Manager view they mark it as seen and send a response to HR. Confidential names and sexual harassment reports never appear.' },
+      { a: 'hr', t: 'Acknowledge', d: 'Within the policy days for the case type. The reporter is told.', status: 'Acknowledged' },
+      { a: 'hr', t: 'Review and update', d: 'Post updates, ask questions, add internal notes. Switch between formal and informal; due dates recalculate.', status: 'Under review' },
+      { a: 'hr', t: 'Issue outcome, or open an ER case', d: 'Close with an outcome the reporter can see, or open a linked case in People Manager.', ref: 'ER', status: 'Outcome issued' },
+      { a: 'staff', t: 'Rate the handling', d: 'Optional, after the outcome.' },
+    ],
+    req: { staff: [['EV-S1', 'Choose a category, including Sexual harassment.'], ['EV-S2', 'Choose recipients: HR always, Chief and Director optional; disabled for sexual harassment.'], ['EV-S3', 'Share my name or keep it confidential.'], ['EV-S4', 'Ask for formal grievance handling.'], ['EV-S5', 'Describe the concern and attach files.'], ['EV-S6', 'See reference, status, recipients, handling and next due step.'], ['EV-S7', 'Read updates, answer questions, see the outcome.'], ['EV-S8', 'Rate how it was handled.']],
+      manager: [['EV-M1', 'Chief or Director sees division reports that include their role.'], ['EV-M2', 'Confidential reporter shown as Confidential.'], ['EV-M3', 'Mark as seen and send a response to HR; the reporter never sees it.'], ['EV-M4', 'See the HR outcome once issued.'], ['EV-M5', 'Sexual harassment reports and HR notes never appear.']],
+      hr: [['EV-H1', 'Inbox filtered by open, overdue, case type or all.'], ['EV-H2', 'Confidential reports show the reference only; handled anonymously.'], ['EV-H3', 'Acknowledge, post updates, ask, add notes, issue outcome.'], ['EV-H4', 'Switch formal or informal; due dates recalculate.'], ['EV-H5', 'Each timebound step shows its due date and overdue flag.'], ['EV-H6', 'Change recipients within the category rule.'], ['EV-H7', 'Open a linked ER case in People Manager.'], ['EV-H8', 'Showing a reporter needs a reason and second HR approval; logged.'], ['EV-H9', 'Set categories, routing and timelines without a release.'], ['EV-H10', 'Volumes, open, overdue and on-time rates; groups under 5 hidden.']] } },
+  pm: { mark: 'PM', name: 'People Manager', goal: 'Managers get the right HR help, and HR runs every ER case in one place.',
+    aims: ['Approved guidance managers can act on', 'One route for managers to report issues', 'HR decides case or no case, then runs the case to closure', 'D&G Committee and disciplinary letters inside the case', 'The 30 existing cases moved in'],
+    measure: 'Reports turned into cases; cases closed on time; overdue steps; days to close; D&G referrals.',
+    steps: [
+      { a: 'mgr', t: 'Read guidance', d: 'Steps, policy reference and forms for common situations: probation, performance, conduct, grievance, absence.' },
+      { a: 'mgr', t: 'Ask HR or report an issue', d: 'Issue type, employee, facts and evidence. Recipients: HR always, Chief or Director if chosen.', ref: 'PM', status: 'New' },
+      { a: 'lead', t: 'Chief or Director informed', d: 'Only when chosen. Sexual harassment stays with HR.' },
+      { a: 'hr', t: 'Intake decision', d: 'Open a case (pre-filled from the report) or close with advice. The manager sees only the result.', status: 'Case opened or Closed' },
+      { a: 'sys', t: 'Case number created', d: 'Timeline set from the case type; any case can be formal or not.', ref: 'ER', status: 'Intake' },
+      { a: 'hr', t: 'Investigate and show cause', d: 'Steps marked done against due dates. Letters drafted from templates with case facts.', status: 'Investigation · Show cause' },
+      { a: 'hr', t: 'D&G Committee (when referred)', d: 'Hearing date and committee decision recorded.', status: 'D&G Committee' },
+      { a: 'hr2', t: 'Second check on each letter', d: 'A different HR user checks and issues; the letter gets its number and goes to the employee.', ref: 'PC/DL' },
+      { a: 'emp', t: 'Employee acknowledges and replies', d: 'The letter appears only in the employee\'s My HR letters. They acknowledge receipt and, for show cause, submit their explanation; the reply step is marked done. Not acknowledged in time: HR records hand delivery.' },
+      { a: 'hr', t: 'Decision and close', d: 'No action, counselling, warnings, suspension, demotion or termination.', status: 'Closed' },
+    ],
+    req: { staff: [['PM-S1', 'My HR letters: letters issued to me, visible only to me and HR.'], ['PM-S2', 'Acknowledge receipt of each letter; acknowledging is not agreeing.'], ['PM-S3', 'Submit a written explanation to a show cause letter before the due date.'], ['PM-S4', 'My cases: reference, type, stage, HR officer, hearing, outcome, action needed.'], ['PM-S5', 'Never see statements, HR notes or others\' details.']],
+      manager: [['PM-M1', 'Browse or search guidance topics.'], ['PM-M2', 'Ask HR for advice or report an issue from any topic.'], ['PM-M3', 'Report issue type, facts, employee, urgency and evidence.'], ['PM-M4', 'Choose recipients: HR always; Chief and Director optional.'], ['PM-M5', 'See the PM reference and track replies.'], ['PM-M6', 'Team cases: stage only; never letters, statements or notes.']],
+      hr: [['PM-H1', 'Intake: reply, open a case, or close with advice.'], ['PM-H2', 'Open cases directly or from Employee Voice; ER number.'], ['PM-H3', 'Case list by stage, overdue, type and D&G referral.'], ['PM-H4', 'Case page: details, timeline, D&G, letters, log.'], ['PM-H5', 'Move stages; D&G applies only when referred.'], ['PM-H6', 'Refer to D&G with hearing date; record decision.'], ['PM-H7', 'Generate letters; second check; PC/DL number; sent to the employee.'], ['PM-H8', 'See acknowledgement and show cause explanation; reply step marked done.'], ['PM-H9', 'Unacknowledged letters flagged; record hand delivery.'], ['PM-H10', 'Record the decision and close.'], ['PM-H11', 'Set case types, timelines and acknowledgement days.'], ['PM-H12', 'Manage guidance topics; see insights.'], ['PM-H13', 'Import the 30 existing cases with history.']] } },
+  exit: { mark: 'EX', name: 'Exit Interviews', goal: 'Learn why people leave, with figures leadership can trust.',
+    aims: ['Every leaver invited in ESS', 'Leavers protected: small groups hidden, sharing off by default', 'Feedback turned into tracked actions', 'Replace ExitBuddy and its reporting errors'],
+    measure: 'Response rate; top reasons for leaving; actions closed on time.',
+    steps: [
+      { a: 'sys', t: 'Invitation and number', d: 'Created when a resignation is recorded; open until the last working day.', ref: 'EX', status: 'Invited' },
+      { a: 'staff', t: 'Answer the questionnaire', d: 'Reasons, ratings (or prefer not to say) and comments. Save and return.', status: 'In progress' },
+      { a: 'staff', t: 'Choices', d: 'Ask for an HR conversation. Sharing a summary with the manager is off unless ticked.' },
+      { a: 'staff', t: 'Submit', d: 'Confirmation shows the reference.', status: 'Completed' },
+      { a: 'hr', t: 'Review and follow up', d: 'Read answers, record conversation notes, tag themes, raise actions with owner and due date. Actions for the line manager go to their Manager view.' },
+      { a: 'mgr', t: 'Line manager follows up', d: 'Sees team leavers and their feedback status, reads the summary only if the leaver shared it, and marks assigned actions done with a note HR can see.' },
+      { a: 'hr', t: 'Report trends', d: 'Groups under 5 hidden, missing ratings left out, division names from HRIS.' },
+    ],
+    req: { staff: [['EX-S1', 'Invitation in ESS on resignation, open until the last day.'], ['EX-S2', 'Answer the questionnaire; save and return.'], ['EX-S3', 'Request a conversation with HR.'], ['EX-S4', 'Choose to share a summary with the manager; default no.'], ['EX-S5', 'See a confirmation with the reference.']],
+      manager: [['EX-M1', 'Team leavers with last day and feedback status.'], ['EX-M2', 'Shared summary: main reasons and what would have kept them, only if allowed.'], ['EX-M3', 'Actions assigned to me; mark done with a note.'], ['EX-M4', 'Never ratings, other comments, HR notes or other teams.']],
+      hr: [['EX-H1', 'Leavers by status; send reminders.'], ['EX-H2', 'Read responses and record notes.'], ['EX-H3', 'Tag themes and raise actions with owner and due date.'], ['EX-H4', 'Edit questions; each change is a new version.'], ['EX-H5', 'Reports hide groups under 5 and never count missing ratings as zero.']] } },
+};
+const MATRIX = {
+  bot: [['Request submitted (needs endorsement)', 'Awaiting manager endorsement', 'Appears under Needs your endorsement', 'Shown as waiting for manager'], ['Manager endorses', 'Endorsement shown', 'Moves to team list', 'Enters the queue with endorsement recorded'], ['Manager declines', 'Declined, with the comment', 'Moves to team list', 'Shown as declined'], ['HR asks for information', 'Question and reply box', 'Status: Information needed', 'Request paused'], ['Letter issued', 'PDF with PC/LTR number', 'Status: Issued (no contents)', 'Issued; checker recorded']],
+  voice: [['Report submitted', 'EV number; status Received', 'Appears under Sent to me (if included)', 'Appears in the inbox'], ['Leader marks seen or responds', 'Nothing', 'Shown as seen; response kept', '"Seen by" and the response'], ['HR posts an update', 'Update and next due step', 'Status changes', 'Recorded; due dates tracked'], ['HR asks for information', 'Question and reply box', 'Status: Information needed', 'Paused for the reporter'], ['Outcome issued', 'Outcome; rating opens', 'Outcome shown', 'Report closed']],
+  pm: [['Manager reports an issue', 'Nothing', 'PM number; request tracked', 'Appears in Manager intake'], ['HR opens a case', 'Case under My cases', 'Case in Team cases (stage only)', 'Case with ER number and timeline'], ['Letter issued', 'In My HR letters; acknowledge', 'Nothing', 'Waiting for the employee'], ['Employee acknowledges', 'Date shown', 'Nothing', 'Acknowledged; case log updated'], ['Show cause explanation submitted', 'Kept with the letter', 'Nothing', 'In the case; reply step done'], ['Not acknowledged in time', 'Still needs acknowledging', 'Nothing', 'Flagged; record hand delivery'], ['Stage changes or case closes', 'Stage and outcome', 'Stage', 'Case log']],
+  exit: [['Invitation created', 'Invitation with last day', 'Listed: Not completed yet', 'Listed: Invited'], ['Submitted, sharing ticked', 'Confirmation with EX number', 'Shared summary appears', 'Full responses'], ['Submitted, sharing not ticked', 'Confirmation with EX number', 'Completed, not shared', 'Full responses'], ['HR assigns action to line manager', 'Nothing', 'Action with due date', 'Action tracked'], ['Manager marks action done', 'Nothing', 'Done with note', 'Done with the manager\'s note']],
+};
+const STATE = { app: 'bot', view: 'staff', step: 0 };
+const isView = (a, v) => ({ staff: ['staff', 'emp'], manager: ['mgr', 'lead'], hr: ['hr', 'hr2'] }[v]).includes(a);
+
+// 01 objectives
+$('#objgrid').innerHTML = Object.entries(APPS).map(([k, a]) => `<div class="panel obj"><div class="top"><span class="mark">${a.mark}</span><h3>${a.name}</h3></div><p class="goal">${esc(a.goal)}</p><ul>${a.aims.map(x => `<li>${esc(x)}</li>`).join('')}</ul><p class="measure"><b>Measured by:</b> ${esc(a.measure)}</p><div class="links"><a class="btn" href="${LINK.proto[k]}" target="_blank" rel="noopener">Open prototype</a><a class="btn" href="${LINK.cr[k]}" target="_blank" rel="noopener">Read CR</a></div></div>`).join('');
+
+// 02 explorer
+function renderApps() {
+  const a = APPS[STATE.app];
+  $('#apptabs').innerHTML = Object.entries(APPS).map(([k, x]) => `<button role="tab" type="button" aria-selected="${k === STATE.app}" data-app="${k}"><span class="mark">${x.mark}</span>${x.name}</button>`).join('');
+  document.querySelectorAll('.viewtoggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === STATE.view)));
+  $('#flow').innerHTML = a.steps.map((s, i) => { const [cls, who] = ACTOR[s.a]; const dim = !isView(s.a, STATE.view) && s.a !== 'sys';
+    return `<button type="button" class="step ${cls} ${dim ? 'dim' : ''}" data-step="${i}" aria-current="${i === STATE.step}"><span class="dot">${i + 1}</span><span class="body"><span class="who">${who}</span><br><span class="t">${esc(s.t)}</span>${s.ref ? ` <span class="ref">${s.ref}</span>` : ''}<br><span class="d">${esc(s.d)}</span></span></button>`; }).join('');
+  const col = { staff: 1, manager: 2, hr: 3 }[STATE.view];
+  $('#matrix').innerHTML = `<table><thead><tr><th>When</th>${['Staff', 'Manager', 'HR'].map((h, i) => `<th style="${i + 1 === col ? 'color:var(--red)' : ''}">${h}${i + 1 === col ? ' (selected)' : ''}</th>`).join('')}</tr></thead><tbody>${MATRIX[STATE.app].map(r => `<tr><td><b>${esc(r[0])}</b></td>${r.slice(1).map((c, i) => `<td style="${i + 1 === col ? 'background:var(--red-soft)' : ''}${c === 'Nothing' ? ';color:var(--muted)' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const s = a.steps[STATE.step]; const [, who] = ACTOR[s.a];
+  const reqs = a.req[STATE.view];
+  $('#detail').innerHTML = `<div class="panel" style="display:flex;flex-direction:column;gap:10px"><p class="small muted">Step ${STATE.step + 1} of ${a.steps.length}</p><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p>
+    <dl class="kv"><dt>Done by</dt><dd>${who}</dd>${s.status ? `<dt>Status</dt><dd>${esc(s.status)}</dd>` : ''}${s.ref ? `<dt>Creates</dt><dd><span class="ref">${s.ref}/${new Date().getFullYear()}/0042</span></dd>` : ''}</dl>
+    <div class="links"><button class="btn" type="button" data-move="-1" ${STATE.step === 0 ? 'disabled' : ''}>Previous step</button><button class="btn primary" type="button" data-move="1" ${STATE.step === a.steps.length - 1 ? 'disabled' : ''}>Next step</button></div></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px"><h3>${{ staff: { pm: 'Staff view (employee)', exit: 'Staff view (leaver)' }[STATE.app] || 'Staff view', manager: { voice: 'Manager view (Chief or Director)', exit: 'Manager view (line manager)' }[STATE.app] || 'Manager view', hr: 'HR view' }[STATE.view]} requirements · ${reqs.length}</h3><div class="reqs">${reqs.map(([id, t]) => `<div><b>${id}</b><span>${esc(t)}</span></div>`).join('')}</div>
+    <div class="links"><a class="btn" href="${LINK.proto[STATE.app]}" target="_blank" rel="noopener">Try it in the prototype</a><a class="btn" href="${LINK.cr[STATE.app]}" target="_blank" rel="noopener">Full CR</a></div></div>`;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-app]'); if (t) { STATE.app = t.dataset.app; STATE.step = 0; renderApps(); renderConnect(t.dataset.app); return; }
+  const v = e.target.closest('.viewtoggle button'); if (v) { STATE.view = v.dataset.view; const first = APPS[STATE.app].steps.findIndex(s => isView(s.a, STATE.view)); STATE.step = Math.max(0, first); renderApps(); return; }
+  const st = e.target.closest('[data-step]'); if (st) { STATE.step = +st.dataset.step; renderApps(); return; }
+  const mv = e.target.closest('[data-move]'); if (mv) { STATE.step = Math.min(APPS[STATE.app].steps.length - 1, Math.max(0, STATE.step + +mv.dataset.move)); renderApps(); return; }
+  const cn = e.target.closest('[data-cnode]'); if (cn) { renderConnect(cn.dataset.cnode); return; }
+  const sg = e.target.closest('[data-stage]'); if (sg) { renderStages(+sg.dataset.stage); return; }
+});
+
+// 03 connections diagram
+function renderConnect(focus) {
+  const W = 240, H = 78;
+  const N = { voice: [20, 30, 'Employee Voice', 'EV reports'], pm: [380, 30, 'People Manager', 'PM requests · ER cases · PC/DL'], bot: [740, 30, 'Automation Bot', 'Templates · PC/RL · PC/LTR'], exit: [380, 160, 'Exit Interviews', 'EX records · stands alone'] };
+  const E = { voice: 'Opens ER case', bot: 'Letter templates' };
+  const on = k => focus === k;
+  const node = k => { const [x, y, t, s2] = N[k]; return `<g class="node ${on(k) ? 'hl' : ''}" data-cnode="${k}" style="cursor:pointer" tabindex="0" role="button" aria-label="Highlight ${t}"><rect x="${x}" y="${y}" width="${W}" height="${H}" rx="10"/><text x="${x + 18}" y="${y + 33}" font-size="17" font-weight="700" ${on(k) ? 'style="fill:var(--red)"' : ''}>${t}</text><text x="${x + 18}" y="${y + 56}" font-size="12.5" style="fill:var(--muted)">${esc(s2)}</text></g>`; };
+  const hlE = k => focus === k || focus === 'pm';
+  const harrow = (x1, x2, y, k, dir) => `<path class="edge ${hlE(k) ? 'hl' : ''}" d="M${x1},${y} L${x2},${y}" marker-end="url(#${hlE(k) ? 'arrH' : 'arr'})"/><text x="${(x1 + x2) / 2}" y="${y - 10}" text-anchor="middle" font-size="12" ${hlE(k) ? 'font-weight="700" style="fill:var(--red)"' : 'style="fill:var(--muted)"'}>${E[k]}</text>`;
+  const up = (x, y2) => `<path class="edge" d="M${x},258 L${x},${y2 + 4}" marker-end="url(#arr)"/>`;
+  $('#connectDiagram').innerHTML = `<svg viewBox="0 0 1000 330" role="img" aria-label="How the four apps and ESS connect"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker><marker id="arrH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--red)"/></marker></defs>
+    ${harrow(262, 376, 69, 'voice')}${harrow(738, 624, 69, 'bot')}
+    ${up(140, 108)}${up(860, 108)}${up(500, 238)}
+    <g class="node"><rect x="20" y="258" width="960" height="56" rx="10" style="fill:var(--surface-2)"/><text x="40" y="284" font-size="15" font-weight="700">ESS · HRIS</text><text x="40" y="303" font-size="12.5" style="fill:var(--muted)">Sign-in, employee facts, divisions, Chiefs and Directors, managers, resignations</text></g>
+    ${Object.keys(N).map(node).join('')}</svg>
+  <p class="small muted" style="margin-top:8px">${{ voice: 'Employee Voice can open a linked ER case in People Manager; the case keeps the EV reference.', pm: 'People Manager receives cases from Employee Voice and uses the Automation Bot template library for disciplinary letters.', bot: 'Automation Bot holds one template library: seven reference letters for staff and six HR-only disciplinary letters used by People Manager.', exit: 'Exit Interviews draws leavers and divisions from ESS and HRIS and does not depend on the other apps.' }[focus] || 'Select an app to highlight its links.'} Microsoft 365 joins in a later phase.</p>`;
+}
+document.addEventListener('keydown', e => { const cn = e.target.closest && e.target.closest('[data-cnode]'); if (cn && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); renderConnect(cn.dataset.cnode); } });
+
+// 04 routing simulator
+const CATS = [['Workplace behaviour', 'any'], ['Sexual harassment', 'hr'], ['Health and safety', 'any'], ['Policy or process concern', 'any'], ['Workload and wellbeing', 'any'], ['Suggestion', 'any']];
+$('#rCat').innerHTML = CATS.map(([n]) => `<option>${n}</option>`).join('');
+function renderRoute() {
+  const cat = $('#rCat').value; const sh = cat === 'Sexual harassment';
+  ['#rChief', '#rDir'].forEach(s => { const i = $(s); i.disabled = sh; if (sh) i.checked = false; });
+  const f = $('#rFormal'); f.disabled = sh; if (sh) f.checked = true;
+  const chief = $('#rChief').checked, dir = $('#rDir').checked, conf = $('#rConf').checked, formal = $('#rFormal').checked;
+  const R = [['HR', true, 'Always included', 'Handles the report end to end in the HR view.'], ['Division Chief', chief, chief ? 'Sees it in Manager view' : sh ? 'Not allowed for this category' : 'Not chosen', 'Marks it as seen and responds to HR. Never sees a confidential name.'], ['Division Director', dir, dir ? 'Sees it in Manager view' : sh ? 'Not allowed for this category' : 'Not chosen', 'Marks it as seen and responds to HR. Never sees a confidential name.']];
+  $('#recips').innerHTML = R.map(([n, on, st, d]) => `<div class="recip ${on ? 'on' : ''}"><span class="st">${st}</span><h4>${n}</h4><p class="small muted">${on ? d : '—'}</p></div>`).join('');
+  const type = sh ? 'Sexual harassment' : formal ? 'Formal grievance' : 'Informal concern';
+  const p = POLICY[type];
+  $('#rNote').innerHTML = sh ? '<p class="note">Sexual harassment goes to HR only, is always timebound and is handled confidentially.</p>' : '';
+  $('#rSummary').innerHTML = `<h3 style="font-size:16px">What happens</h3><dl class="kv" style="margin-top:8px"><dt>Reference</dt><dd><span class="ref">EV/${new Date().getFullYear()}/0042</span></dd><dt>Handled as</dt><dd>${type}${!sh && !formal ? ' (HR can change this)' : ''}</dd><dt>Reporter shown as</dt><dd>${conf ? 'Reference number only; handled anonymously' : 'Name and employee ID'}</dd><dt>Timeline</dt><dd>${p.tb ? p.steps.map(([l, d]) => `${l} ${d} day${d === 1 ? '' : 's'}`).join(' · ') : 'Not timebound unless HR changes the setting'}</dd>${conf && (chief || dir) ? '<dt>Note</dt><dd>The Chief and Director never see a confidential reporter\'s name.</dd>' : ''}</dl>`;
+}
+['#rCat', '#rChief', '#rDir', '#rConf', '#rFormal'].forEach(s => $(s).addEventListener('change', renderRoute));
+
+// 05 case lifecycle
+function renderIntake() {
+  const box = (x, y, w, t, s, fill) => `<g class="node"><rect x="${x}" y="${y}" width="${w}" height="64" rx="10" ${fill ? `style="fill:${fill};stroke:${fill}"` : ''}/><text x="${x + w / 2}" y="${y + 28}" text-anchor="middle" font-size="14.5" font-weight="700" ${fill ? 'style="fill:#fff"' : ''}>${t}</text><text x="${x + w / 2}" y="${y + 47}" text-anchor="middle" font-size="11.5" style="fill:${fill ? '#f3d7dc' : 'var(--muted)'}">${s}</text></g>`;
+  const arrow = (d, l, lx, ly) => `<path class="edge" d="${d}" marker-end="url(#arr2)"/>${l ? `<text x="${lx}" y="${ly}" font-size="11.5" text-anchor="middle" style="fill:var(--muted)">${l}</text>` : ''}`;
+  $('#intakeDiagram').innerHTML = `<svg viewBox="0 0 1000 250" role="img" aria-label="How a report becomes a case"><defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+    ${box(20, 20, 200, 'Manager report', 'People Manager · PM number')}${box(20, 160, 200, 'Employee Voice', 'Report · EV number')}
+    ${box(320, 90, 180, 'HR intake', 'Case or no case?')}
+    ${box(620, 20, 360, 'ER case opened', 'ER number · timeline from case type', '#c8102e')}${box(620, 160, 360, 'Closed with advice', 'Manager or reporter told; no case')}
+    ${arrow('M220,52 C270,52 270,110 318,115')}${arrow('M220,192 C270,192 270,135 318,130', 'Open an ER case', 268, 230)}
+    ${arrow('M500,110 C560,110 560,52 618,52', 'Case', 560, 70)}${arrow('M500,135 C560,135 560,192 618,192', 'No case', 560, 182)}
+  </svg>`;
+}
+const STAGES = [
+  { n: 'Intake', d: 'Case opened from a manager report, an Employee Voice report or by HR. Case type, formal or not, recipients and case officer set.', letters: [], who: 'HR' },
+  { n: 'Investigation', d: 'Facts gathered, interviews held, evidence attached. Suspension pending investigation if needed.', letters: ['Suspension pending investigation'], who: 'HR' },
+  { n: 'Show cause', d: 'Employee told the allegation and asked to explain in writing within the reply days.', letters: ['Notice of allegation and show cause'], who: 'HR, employee replies' },
+  { n: 'D&G Committee', d: 'Only when HR refers the case. Hearing date set, committee decision recorded. The Division Director is added as a recipient.', letters: ['Invitation to D&G Committee hearing'], who: 'HR and the Committee', opt: true },
+  { n: 'Decision', d: 'Decision recorded: no action, counselling, verbal, written or final warning, suspension without pay, demotion or termination.', letters: ['Warning letter', 'Outcome letter'], who: 'HR (with Committee where referred)' },
+  { n: 'Closed', d: 'Case closed with its full log. Closure letter when no further action.', letters: ['Case closure, no further action'], who: 'HR' },
+];
+function renderStages(i = 0) {
+  $('#stages').innerHTML = STAGES.map((s, j) => `<button type="button" class="${s.opt ? 'opt' : ''}" data-stage="${j}" aria-pressed="${i === j}"><span class="i">${String(j + 1).padStart(2, '0')}${s.opt ? ' · if referred' : ''}</span><span class="n">${s.n}</span></button>`).join('');
+  const s = STAGES[i];
+  $('#stageDetail').innerHTML = `<div class="grid2"><div style="display:flex;flex-direction:column;gap:8px"><h3>${s.n}</h3><p>${esc(s.d)}</p><dl class="kv"><dt>Done by</dt><dd>${s.who}</dd></dl></div><div style="display:flex;flex-direction:column;gap:8px"><p class="small" style="font-weight:600">Letters at this stage</p>${s.letters.length ? `<div class="letters">${s.letters.map(l => `<span class="letter-chip">${l}</span>`).join('')}</div><p class="small muted">Drafted from the shared template library with case facts filled in. A second HR user checks each one; on issue it gets a <span class="ref">PC/DL</span> number.</p>` : '<p class="small muted">No letter at this stage.</p>'}</div></div>`;
+}
+
+// 06 timelines
+const POLICY = {
+  'Disciplinary': { tb: true, steps: [['Show cause letter', 5], ['Employee reply', 8], ['Investigation', 20], ['Decision', 30]] },
+  'Formal grievance': { tb: true, steps: [['Acknowledge', 2], ['Investigation', 10], ['Outcome', 20]] },
+  'Informal concern': { tb: false, steps: [['Acknowledge', 3], ['Outcome', 15]] },
+  'Performance': { tb: false, steps: [['Improvement plan', 10], ['Review', 40]] },
+  'Sexual harassment': { tb: true, steps: [['Acknowledge', 1], ['Investigation', 7], ['Outcome', 15]] },
+};
+function addWorkDays(from, n) { const d = new Date(from); let k = 0; while (k < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 5 && w !== 6) k++; } return d; }
+const fmt = d => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+$('#tType').innerHTML = Object.keys(POLICY).map(k => `<option>${k}</option>`).join('');
+$('#tDate').value = new Date().toISOString().slice(0, 10);
+function renderTimeline() {
+  const type = $('#tType').value; const p = POLICY[type]; const start = new Date($('#tDate').value || Date.now());
+  const pts = p.steps.map(([l, n]) => ({ l, n, d: addWorkDays(start, n) }));
+  const last = Math.max(...pts.map(x => x.d - start));
+  $('#tOut').innerHTML = `<div class="sh" style="margin:0"><div><h3 style="font-size:16px">${type}</h3><p class="small muted" style="margin-top:2px">Opened ${fmt(start)}. ${p.tb ? 'Timebound: late steps are flagged as overdue.' : 'Not timebound by default; HR can switch it on.'}</p></div><span class="pill ${p.tb ? 'yes' : ''}">${p.tb ? 'Timebound' : 'HR choice'}</span></div>
+    <div class="gantt">${pts.map(x => `<div class="g-row"><span class="g-l">${x.l}</span><div class="g-track"><div class="g-bar" style="width:${Math.max(6, (x.d - start) / last * 100)}%"></div></div><span class="g-d"><b>${fmt(x.d)}</b><br><span class="muted">${x.n} working day${x.n === 1 ? '' : 's'}</span></span></div>`).join('')}</div>`;
+}
+$('#tTable').innerHTML = `<thead><tr><th>Case type</th><th>Timebound</th><th>Who receives it</th><th>Steps, working days from opening (sample)</th></tr></thead><tbody>${Object.entries(POLICY).map(([k, p]) => `<tr><td><b>${k}</b></td><td>${k === 'Sexual harassment' || k === 'Formal grievance' ? '<span class="pill yes">Always</span>' : p.tb ? '<span class="pill yes">Yes</span>' : '<span class="pill">HR choice</span>'}</td><td>${k === 'Sexual harassment' ? 'HR only' : 'HR, plus Chief or Director if chosen'}</td><td>${p.steps.map(([l, n]) => `${l} ${n}`).join(' · ')}</td></tr>`).join('')}</tbody>`;
+['#tType', '#tDate'].forEach(s => $(s).addEventListener('change', renderTimeline));
+
+// 07 reference numbers
+const REFS = [['PC/RL', 'Letter request', 'Automation Bot', 'Staff submit a request', 42], ['PC/LTR', 'Issued reference letter', 'Automation Bot', 'HR issues the letter', 119], ['PC/DL', 'Issued disciplinary letter', 'People Manager', 'HR issues it from a case', 38], ['EV', 'Employee Voice report', 'Employee Voice', 'Staff submit a report', 42], ['PM', 'Manager request or report', 'People Manager', 'A manager submits', 22], ['ER', 'ER case', 'People Manager', 'HR opens a case', 42], ['EX', 'Exit record', 'Exit Interviews', 'The invitation is created', 44]];
+$('#refTable').innerHTML = REFS.map(r => `<tr><td><span class="ref">${r[0]}</span></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+$('#refSel').innerHTML = REFS.map((r, i) => `<option value="${i}">${r[1]} (${r[0]})</option>`).join('');
+const counters = REFS.map(r => r[4] - 1);
+function showRef(bump) { const i = +$('#refSel').value; if (bump) counters[i]++; const r = REFS[i]; const y = new Date().getFullYear();
+  $('#refOut').innerHTML = `<span class="p">${r[0]}</span>/<span class="y">${y}</span>/${String(counters[i] + (bump ? 0 : 1)).padStart(4, '0')}`;
+  $('#refWhen').textContent = `${bump ? 'Created' : 'Next number'} when ${r[3].charAt(0).toLowerCase() + r[3].slice(1)}. ${bump ? 'Press again to see the sequence continue.' : ''}`; }
+$('#refSel').addEventListener('change', () => showRef(false)); $('#refBtn').addEventListener('click', () => showRef(true));
+
+// section nav highlight
+const links = [...document.querySelectorAll('#secnav a')];
+const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + en.target.id)); }), { rootMargin: '-45% 0px -50% 0px' });
+document.querySelectorAll('main section').forEach(s => io.observe(s));
+
+renderApps(); renderConnect(null); renderRoute(); renderIntake(); renderStages(0); renderTimeline(); showRef(false);
+</script>
+
+</html>

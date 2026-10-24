@@ -1,0 +1,573 @@
+<title>People Manager</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>/* Layout: app bar with Staff|HR toggle, tab row, single content column (list + detail split on wide screens) */
+:root{
+  --bg:#f6f4f4; --surface:#ffffff; --surface-2:#f0ecec; --line:#e2dbdb; --ink:#1a1416; --muted:#6b5f62;
+  --red:#c8102e; --red-ink:#ffffff; --red-soft:#fbe9ec; --black:#1a1416;
+  --ok:#1d7a46; --ok-soft:#e3f3e9; --warn:#a15c00; --warn-soft:#fbf0dc; --info:#355c9a; --info-soft:#e6edf8; --grey-soft:#ece8e8;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Public Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#1a1416}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{background:#1a1416;color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;border-bottom:3px solid #c8102e}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{width:36px;height:36px;border-radius:6px;background:#c8102e;display:grid;place-items:center;font:700 15px var(--f-display);flex:none}
+.app{font:700 18px/1.2 var(--f-display);letter-spacing:.01em}
+.sub{font-size:12px;color:#c9bcbf;letter-spacing:.04em;text-transform:uppercase}
+.toggle{display:flex;background:#2e2629;border-radius:999px;padding:3px}
+.toggle button{border:0;background:transparent;color:#d8cdd0;font:600 14px var(--f-body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:#c8102e;color:#fff}
+.toggle button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.who{font-size:12px;color:#c9bcbf;width:100%;display:flex;gap:6px;flex-wrap:wrap}
+.who b{color:#fff;font-weight:600}
+.proto{background:var(--surface-2);color:var(--muted);font-size:12.5px;border-bottom:1px solid var(--line)}
+.proto .wrap{padding-block:6px}
+.tabs{border-bottom:1px solid var(--line);background:var(--surface)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:12px 12px 10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+main .wrap{padding-block:20px 48px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h2{font-size:21px} h3{font-size:16px}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.mono{font-family:var(--f-mono);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.card:hover{border-color:var(--red)}
+.card[aria-current="true"]{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.card .t{font-weight:700}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--surface-2)}
+.row[aria-current="true"]{background:var(--red-soft)}
+.row .t{font-weight:600;min-width:0}
+.row .m{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-new{background:var(--info-soft);color:var(--info)}
+.s-prog{background:var(--warn-soft);color:var(--warn)}
+.s-need{background:var(--red-soft);color:var(--red)}
+.s-done{background:var(--ok-soft);color:var(--ok)}
+.s-off{background:var(--grey-soft);color:var(--muted)}
+label{font-weight:600;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+.hint{font-weight:400;color:var(--muted);font-size:12.5px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+textarea{min-height:90px;resize:vertical}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:500}
+.check input{width:auto;margin-top:3px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 10px;font-size:13px}
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:14px}
+dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.thread{display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 12px;border-radius:8px;background:var(--surface-2);max-width:90%;font-size:14px}
+.msg.me{align-self:flex-end;background:var(--red-soft)}
+.msg.note{background:var(--warn-soft);border:1px dashed var(--warn);max-width:100%}
+.msg .by{font-size:12px;color:var(--muted);margin-bottom:2px}
+.callout{border-left:3px solid var(--red);background:var(--red-soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:14px}
+.callout.info{border-color:var(--info);background:var(--info-soft)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:minmax(110px,180px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13.5px}
+.bar-track{height:12px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:var(--red);border-radius:3px}
+.bar-row .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .n{font:700 26px var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.letter{background:#fff;color:#1a1416;border:1px solid var(--line);border-radius:4px;padding:28px;font-family:Georgia,"Times New Roman",serif;font-size:14.5px;line-height:1.6;display:flex;flex-direction:column;gap:12px}
+.letter .lh{display:flex;justify-content:space-between;border-bottom:2px solid #c8102e;padding-bottom:8px;font-family:var(--f-display);font-size:13px}
+.letter .locked{background:#f3f0f0;border-radius:3px;padding:0 3px}
+.letter textarea{font:inherit;color:#1a1416;background:#fff8e6;border:1px dashed #a15c00}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.scrim{position:fixed;inset:0;background:rgba(10,6,8,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.dialog{background:var(--surface);border-radius:10px;max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+.stars{display:flex;gap:4px}
+.stars button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:36px;height:36px;cursor:pointer;font-weight:700;color:var(--ink)}
+.stars button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.tag[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.card,.row,.btn{transition:border-color .15s,background .15s}}
+.linkbtn{background:none;border:0;padding:0;color:var(--red);font:inherit;text-decoration:underline;cursor:pointer}
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 12px;border-top:1px solid var(--line);font-size:14px;align-items:center}
+.step:first-child{border-top:0}
+.stage{display:flex;gap:4px;flex-wrap:wrap}
+.stage span{font-size:12px;padding:4px 10px;border-radius:4px;background:var(--surface-2);color:var(--muted);font-weight:600}
+.stage span.on{background:var(--ink);color:var(--surface)}
+.stage span.done{background:var(--ok-soft);color:var(--ok)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);margin:0 4px 4px 0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.filters label{min-width:150px;flex:1}
+.fields > .btns{align-self:end}
+.viewnote{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.vchip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--muted)}
+.subtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.subtoggle button{border:0;background:none;padding:5px 12px;border-radius:999px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
+.subtoggle button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+</style>
+<header class="bar"><div class="wrap">
+  <div class="brand"><span class="mark" aria-hidden="true">PM</span><div><div class="app">People Manager</div><div class="sub">People &amp; Culture · Manager guidance and ER cases</div></div></div>
+  <div class="toggle" role="group" aria-label="Switch view"><button type="button" data-view="staff" aria-pressed="true">Staff</button><button type="button" data-view="manager" aria-pressed="false">Manager</button><button type="button" data-view="hr" aria-pressed="false">HR</button></div>
+  <div class="who" id="who"></div>
+</div></header>
+<div class="proto"><div class="wrap"><a class="linkbtn" href="../index.html">All apps</a> · Prototype with sample data for the CR review. Not connected to ESS or HRIS. Changes are kept in this browser only. <button type="button" class="linkbtn" data-act="resetData">Reset sample data</button></div></div>
+<nav class="tabs" role="tablist" id="tabs"><div class="wrap"></div></nav>
+<main id="main"><div class="wrap"></div></main>
+<div id="modal"></div><div id="toast" role="status" aria-live="polite" hidden></div>
+<script>
+// Shared shell: Staff|HR toggle, tabs, actions, modal, toast
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const UI = { view: 'staff', tab: null };
+const VIEW_NAMES = { staff: 'Staff', manager: 'Manager', hr: 'HR' };
+const pill = (status) => `<span class="pill ${APP.statusClass[status] || 's-off'}">${esc(status)}</span>`;
+const today = new Date();
+const fmtDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString(); };
+const ageDays = d => Math.max(0, Math.round((today - new Date(d)) / 86400000));
+// Reference numbers: <PREFIX>/<YEAR>/<4-digit sequence>, sequential per prefix and year, never reused or edited
+function makeRef(prefix) {
+  S.counters = S.counters || {};
+  const n = (S.counters[prefix] = (S.counters[prefix] ?? (APP.refBase?.[prefix] || 0)) + 1);
+  return `${prefix}/${today.getFullYear()}/${String(n).padStart(4, '0')}`;
+}
+// Working days: Maldives weekend is Friday and Saturday
+function addWorkDays(from, n) {
+  const d = new Date(from); let added = 0;
+  while (added < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 5 && w !== 6) added++; }
+  return d.toISOString();
+}
+function duePill(due, doneAt) {
+  if (doneAt) return `<span class="pill s-done">Done ${fmtDate(doneAt)}</span>`;
+  const days = Math.round((new Date(due) - today) / 86400000);
+  if (days < 0) return `<span class="pill s-need">Overdue ${-days} d</span>`;
+  if (days <= 2) return `<span class="pill s-prog">Due ${days === 0 ? 'today' : 'in ' + days + ' d'}</span>`;
+  return `<span class="pill s-off">Due ${fmtDate(due)}</span>`;
+}
+const STORE_KEY = () => `bml-pc-proto-v3-${APP.key}`;
+function save() { try { localStorage.setItem(STORE_KEY(), JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }
+function loadSaved() { try { const v = localStorage.getItem(STORE_KEY()); if (v) Object.assign(S, JSON.parse(v)); } catch (e) { /* storage unavailable */ } }
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function openModal(html) { $('#modal').innerHTML = `<div class="scrim" data-act="closeModalBg"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal input, #modal textarea, #modal select, #modal button'); f && f.focus(); }
+function closeModal() { $('#modal').innerHTML = ''; }
+
+function render() {
+  if (!UI.tab) UI.tab = Object.fromEntries(Object.entries(APP.tabs).map(([k, v]) => [k, v[0][0]]));
+  document.querySelectorAll('.toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === UI.view)));
+  $('#who').innerHTML = APP.who[UI.view];
+  $('#tabs .wrap').innerHTML = APP.tabs[UI.view].map(([id, label]) => {
+    const n = APP.badge ? APP.badge(UI.view, id) : '';
+    return `<button role="tab" aria-selected="${UI.tab[UI.view] === id}" data-act="tab" data-id="${id}">${esc(label)}${n ? ` (${n})` : ''}</button>`;
+  }).join('');
+  $('#main .wrap').innerHTML = APP.views[UI.view][UI.tab[UI.view]]();
+  save();
+}
+
+const ACTIONS = {
+  tab: d => { UI.tab[UI.view] = d.id; render(); window.scrollTo({ top: 0 }); },
+  closeModal: () => closeModal(),
+  resetData: () => { try { localStorage.removeItem(STORE_KEY()); } catch (e) {} location.reload(); },
+  closeModalBg: (d, el, e) => { if (e.target === el) closeModal(); },
+};
+
+document.addEventListener('click', e => {
+  const v = e.target.closest('.toggle button');
+  if (v) { UI.view = v.dataset.view; render(); window.scrollTo({ top: 0 }); toast(`Switched to ${VIEW_NAMES[v.dataset.view]} view`); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const fn = ACTIONS[a.dataset.act] || APP.actions[a.dataset.act];
+  if (fn) { fn(a.dataset, a, e); }
+});
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-form]');
+  if (!f) return;
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f, e.submitter).entries());
+  APP.forms[f.dataset.form](data, f);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// People Manager — manager guidance + HR case management (ER cases, D&G Committee, disciplinary letters)
+const STAFF = { name: 'Ahmed Naseer', id: 'EMP 05521', title: 'Branch Manager', dept: 'Retail Banking – Hulhumalé Branch', div: 'Retail Banking', reports: 9 };
+const EMP = { name: 'Hussain Shafeeq', id: 'EMP 09456', title: 'Teller', dept: 'Retail Banking – Hulhumalé Branch', div: 'Retail Banking', mgr: 'Ahmed Naseer' };
+const TEAM = ['Hussain Shafeeq', 'Aishath Nazla', 'Fathimath Leeza', 'Mohamed Shiyam', 'Hawwa Raufa', 'Teller, EMP 11208'];
+const HR_ME = 'Mariyam Shifa (HR)';
+const HR_2 = 'Ahmed Ilham (HR)';
+const DIVS = ['Retail Banking', 'Operations', 'Corporate Banking', 'Cards & Payments', 'Treasury', 'Risk', 'IT', 'Finance', 'Corporate Services', 'Legal & Compliance', 'People & Culture', 'Internal Audit'];
+const LEADS = d => ({ chief: `Chief, ${d}`, director: `Director, ${d}` });
+const STAGES = ['Intake', 'Investigation', 'Show cause', 'D&G Committee', 'Decision', 'Closed'];
+const SANCTIONS = ['No action', 'Counselling', 'Verbal warning', 'Written warning', 'Final written warning', 'Suspension without pay', 'Demotion', 'Termination'];
+const ISSUE_TYPES = ['Conduct concern', 'Performance concern', 'Attendance or absence', 'Grievance in my team', 'Sexual harassment', 'Other'];
+
+// ---- seeded sample of 30 migrated cases (stand-in for the current tracker) ----
+function seeded() {
+  let x = 7; const rnd = () => (x = (x * 9301 + 49297) % 233280) / 233280; const pick = a => a[Math.floor(rnd() * a.length)];
+  const first = ['Ahmed', 'Mohamed', 'Ibrahim', 'Ali', 'Hussain', 'Hassan', 'Ismail', 'Aminath', 'Fathimath', 'Mariyam', 'Aishath', 'Hawwa', 'Khadeeja', 'Shiyam', 'Nazim', 'Raufa', 'Shifana', 'Zaid'];
+  const last = ['Rasheed', 'Naseer', 'Shareef', 'Zahir', 'Faisal', 'Waheed', 'Hameed', 'Latheef', 'Saeed', 'Moosa', 'Didi', 'Manik', 'Adam', 'Jaleel'];
+  const allegations = { 'Disciplinary': ['Repeated unauthorised absence', 'Breach of cash handling procedure', 'Misuse of system access', 'Rude conduct towards a customer', 'Failure to follow KYC checks', 'Falsified overtime claim'], 'Grievance (formal)': ['Unfair allocation of overtime', 'Treatment by supervisor', 'Denied training opportunity', 'Shift rota dispute'], 'Grievance (informal)': ['Team communication breakdown', 'Desk move dispute', 'Leave approval delay'], 'Performance': ['Targets missed for three quarters', 'Repeated reconciliation errors'], [SH]: ['Unwelcome comments by a colleague'] };
+  const types = ['Disciplinary', 'Disciplinary', 'Disciplinary', 'Grievance (formal)', 'Grievance (informal)', 'Performance', 'Disciplinary', 'Grievance (formal)', SH, 'Disciplinary'];
+  const out = [];
+  for (let i = 1; i <= 30; i++) {
+    const type = types[i % types.length]; const age = Math.floor(rnd() * 160) + 3;
+    const closed = i <= 11; const stageIdx = closed ? 5 : type === 'Disciplinary' ? 1 + Math.floor(rnd() * 4) : 1 + Math.floor(rnd() * 2);
+    const dg = type === 'Disciplinary' && (stageIdx >= 3 || (closed && rnd() > 0.4));
+    const div = pick(DIVS.slice(0, 10));
+    out.push({ ref: `ER/${age > 120 ? 2025 : 2026}/${String(i).padStart(4, '0')}`, migrated: true, type, formal: type !== 'Grievance (informal)', employee: `${pick(first)} ${pick(last)}`, eid: `EMP ${String(3000 + Math.floor(rnd() * 9000)).padStart(5, '0')}`, div, grade: `G${1 + Math.floor(rnd() * 9)}`, raisedBy: pick(['Line manager', 'Line manager', 'HR', 'Employee Voice', 'Internal Audit']), summary: pick(allegations[type]), stage: STAGES[stageIdx], route: ['HR', ...(rnd() > 0.5 ? ['Division Chief'] : []), ...(dg ? ['Division Director'] : [])], dg, dgDate: dg ? daysAgo(Math.max(1, age - 30)) : null, at: daysAgo(age), stageAt: daysAgo(Math.max(0, Math.floor(age / 3))), sanction: closed ? pick(type === 'Disciplinary' ? SANCTIONS.slice(1, 6) : ['No action', 'Counselling']) : null, closedAt: closed ? daysAgo(Math.max(0, age - 40)) : null, log: [{ at: daysAgo(age), by: 'Migration', t: 'Imported from the current case tracker.' }], letters: [], assignee: pick(['Mariyam Shifa (HR)', 'Hawwa Nisha (HR)', 'Ahmed Ilham (HR)']), done: Object.fromEntries(Array.from({ length: Math.max(0, stageIdx) }, (_, j) => [j, daysAgo(Math.max(0, age - 5 * (j + 1)))])) });
+  }
+  return out;
+}
+const SH = 'Sexual harassment';
+const S = {
+  topics: [
+    { id: 'prob', name: 'Probation reviews', group: 'Performance', views: 41, reviewed: '2026-08-12', policy: 'HR Policy Manual §4.3 Probation', active: true, steps: ['Hold a check-in at the end of month 3 and record it in ESS.', 'Give specific examples of what is going well and what must improve.', 'If confirmation is at risk, tell HR at least 30 days before the probation end date.', 'Submit the confirmation or extension form before the end date.'], forms: ['Probation review form'] },
+    { id: 'perf', name: 'Raising a performance concern', group: 'Performance', views: 66, reviewed: '2026-07-02', policy: 'Performance Management Policy §6', active: true, steps: ['Talk to the employee early and privately; describe the gap, not the person.', 'Agree two or three measurable goals with a review date.', 'Record the conversation in ESS on the same day.', 'If there is no improvement by the review date, report it to HR here.'], forms: ['Performance conversation record'] },
+    { id: 'cond', name: 'A conduct issue in my team', group: 'Conduct', views: 38, reviewed: '2026-09-20', policy: 'Code of Conduct; Disciplinary Procedure §3', active: true, steps: ['Make sure everyone is safe and stop the behaviour if it is ongoing.', 'Write down what happened, when and who saw it, using facts only.', 'Do not investigate or decide a sanction yourself.', 'Report it to HR here today; HR decides whether to open a case.'], forms: [] },
+    { id: 'griev', name: 'An employee raises a grievance', group: 'Conduct', views: 24, reviewed: '2026-09-02', policy: 'Grievance Procedure §2–§5', active: true, steps: ['Listen and note the facts; do not promise an outcome.', 'Ask whether they want it handled formally or informally.', 'Report it to HR here; formal grievances follow fixed timelines.', 'Keep the details confidential.'], forms: [] },
+    { id: 'leave', name: 'Leave and absence', group: 'Attendance', views: 52, reviewed: '2026-09-01', policy: 'Leave Policy §2–§7', active: true, steps: ['Approve or decline leave in ESS within three working days.', 'Three or more sick days in a row need a medical certificate.', 'Unplanned absence on three occasions in a quarter is worth a supportive conversation.', 'Report repeated unauthorised absence to HR here.'], forms: ['Return-to-work conversation record'] },
+    { id: 'flex', name: 'Flexible work requests', group: 'Team', views: 19, reviewed: '2026-05-28', policy: 'Flexible Working Guideline', active: true, steps: ['Consider the request on business needs and branch cover.', 'Discuss alternatives if you cannot agree to it as asked.', 'Reply in writing within 14 days.', 'Agree a trial period and review date.'], forms: ['Flexible work agreement'] },
+  ],
+  requests: [
+    { ref: 'PM/2026/0016', kind: 'Report', issue: 'Conduct concern', topic: 'cond', mgr: 'Ahmed Naseer', sid: 'EMP 05521', div: 'Retail Banking', urgency: 'Normal', status: 'Case opened', caseRef: 'ER/2026/0040', at: daysAgo(9), text: 'A teller argued with a customer at the counter and refused to serve them. Two colleagues saw it.', emp: 'Hussain Shafeeq, EMP 09456', route: ['HR'], msgs: [{ by: 'HR', t: 'Thank you. HR has opened a case and will contact you if we need anything further.' }] },
+    { ref: 'PM/2026/0014', kind: 'Advice', issue: 'Performance concern', topic: 'perf', mgr: STAFF.name, sid: STAFF.id, div: STAFF.div, urgency: 'Normal', status: 'Responded', at: daysAgo(5), text: 'A teller has missed cash balancing targets three months running after an earlier conversation. What should the next step be?', emp: 'Teller, EMP 11208', route: ['HR'], msgs: [{ by: 'HR', t: 'Next step is a documented improvement plan with weekly check-ins for 6 weeks. Happy to join the first meeting.' }] },
+    { ref: 'PM/2026/0019', kind: 'Report', issue: 'Conduct concern', topic: 'cond', mgr: 'Shifana Adam', sid: 'EMP 04410', div: 'Operations', urgency: 'Urgent', status: 'New', at: daysAgo(0), text: 'Two staff had a heated argument on the operations floor this morning; one pushed the other. Both are back at work.', emp: 'Ibrahim Waheed, EMP 08120 and Hassan Latheef, EMP 09341', route: ['HR', 'Division Chief'], msgs: [] },
+    { ref: 'PM/2026/0021', kind: 'Report', issue: 'Attendance or absence', topic: 'leave', mgr: 'Ibrahim Nazeem', sid: 'EMP 03918', div: 'Cards & Payments', urgency: 'Normal', status: 'New', at: daysAgo(2), text: 'An officer has been absent without approval on 4 days this month and did not answer calls.', emp: 'Ali Shareef, EMP 10877', route: ['HR'], msgs: [] },
+  ],
+  cases: [{ ref: 'ER/2026/0040', type: 'Disciplinary', formal: true, employee: EMP.name, eid: EMP.id, div: EMP.div, grade: 'G3', raisedBy: 'Line manager', source: 'PM/2026/0016', summary: 'Refused to serve a customer and argued with them at the counter', stage: 'Show cause', route: ['HR'], dg: false, at: daysAgo(8), assignee: HR_ME, done: { 0: daysAgo(3) },
+      log: [{ at: daysAgo(8), by: HR_ME, t: 'Case opened from PM/2026/0016.' }, { at: daysAgo(6), by: HR_ME, t: 'Statements taken from two witnesses.' }, { at: daysAgo(3), by: HR_2, t: 'Notice of allegation and show cause issued, PC/DL/2026/0037.' }],
+      letters: [{ tpl: 'sc', name: 'Notice of allegation and show cause', v: 2, status: 'Issued', drafter: HR_ME, checker: HR_2, ref: 'PC/DL/2026/0037', issuedAt: daysAgo(3), body: 'It has been reported that on or around 15 Oct 2026 you refused to serve a customer and argued with them at the counter. This may amount to misconduct under the Bank\'s Disciplinary Procedure. You are required to submit a written explanation to People & Culture within 3 working days of receiving this letter.' }] }, ...seeded()],
+  ackDays: 2,
+  // Working-day timelines per case type. Sample values: HR sets these to match policy.
+  caseTypes: {
+    'Disciplinary': { timebound: true, steps: [['Issue show cause letter', 5], ['Employee reply due', 8], ['Complete investigation', 20], ['Decision issued', 30]] },
+    'Grievance (formal)': { timebound: true, steps: [['Acknowledge', 2], ['Complete investigation', 10], ['Outcome issued', 20]] },
+    'Grievance (informal)': { timebound: false, steps: [['Acknowledge', 3], ['Outcome issued', 15]] },
+    'Performance': { timebound: false, steps: [['Improvement plan agreed', 10], ['Review', 40]] },
+    [SH]: { timebound: true, steps: [['Acknowledge', 1], ['Complete investigation', 7], ['Outcome issued', 15]] },
+  },
+  committee: [['Chair', 'Director, People & Culture'], ['Member', 'Head of Total Rewards & Employee Relations'], ['Member', "Director of the employee's division"], ['Member', 'Legal Counsel'], ['Secretary', 'Employee Relations & Engagement Manager']],
+  letterTpls: [
+    { id: 'sc', name: 'Notice of allegation and show cause', v: 2, body: 'It has been reported that on or around {date} you {allegation}. This may amount to misconduct under the Bank\'s Disciplinary Procedure. You are required to submit a written explanation to People & Culture within {replyDays} working days of receiving this letter.' },
+    { id: 'susp', name: 'Suspension pending investigation', v: 1, body: 'Pending investigation into the allegation that you {allegation}, you are placed on suspension with full pay with effect from {today}. This is not a disciplinary sanction. You must remain available to attend meetings when asked.' },
+    { id: 'inv', name: 'Invitation to D&G Committee hearing', v: 2, body: 'You are invited to attend a hearing of the Disciplinary & Grievance Committee on {dgDate} regarding the allegation that you {allegation}. You may be accompanied by a colleague of your choice and may present any evidence in support of your case.' },
+    { id: 'warn', name: 'Warning letter', v: 3, body: 'Following the review of case {ref}, the Bank has decided to issue you a {sanction}. This will remain on your file for 12 months. Any further misconduct of a similar nature may lead to further disciplinary action.' },
+    { id: 'out', name: 'Outcome letter', v: 1, body: 'This letter confirms the outcome of case {ref}. After considering the facts and your explanation, the Bank has decided: {sanction}. You may appeal this decision in writing within 5 working days.' },
+    { id: 'close', name: 'Case closure, no further action', v: 1, body: 'We write to confirm that case {ref} has been closed with no further action. Thank you for your cooperation during the review.' },
+  ],
+  topicSel: null, askTopic: undefined, reqSel: null, caseSel: null, editTopic: null, search: '', caseFilter: { stage: 'Open', type: 'All', dg: 'All' },
+};
+const statusClass = { 'New': 's-new', 'Responded': 's-done', 'Case opened': 's-need', 'Closed': 's-off', 'In progress': 's-prog', Intake: 's-new', Investigation: 's-prog', 'Show cause': 's-prog', 'D&G Committee': 's-need', Decision: 's-prog', Published: 's-done', Retired: 's-off', Draft: 's-prog', 'Awaiting check': 's-prog', Issued: 's-done' };
+const topic = id => S.topics.find(t => t.id === id);
+const reqBy = ref => S.requests.find(r => r.ref === ref);
+const caseBy = ref => S.cases.find(c => c.ref === ref);
+const caseOpen = c => c.stage !== 'Closed';
+function caseSteps(c) {
+  const t = S.caseTypes[c.type]; if (!t || !t.timebound) return [];
+  return t.steps.map(([label, d], i) => ({ label, due: addWorkDays(c.at, d), done: c.closedAt || (c.done || {})[i] }));
+}
+const caseOverdue = c => caseOpen(c) && caseSteps(c).some(s => !s.done && new Date(s.due) < today);
+const routeTxt = (route, div) => route.map(x => x === 'HR' ? 'HR' : `${x} (${div})`).join(' · ');
+
+// ---------------- Staff (manager) view ----------------
+function staffGuide() {
+  if (S.askTopic !== undefined) return askForm();
+  if (S.topicSel) {
+    const t = topic(S.topicSel);
+    return `<div class="panel"><div class="head"><div><p class="small muted">${esc(t.group)}</p><h2>${esc(t.name)}</h2></div><button class="btn sm" data-act="back">All topics</button></div>
+      <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">${t.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+      <dl class="kv"><dt>Policy</dt><dd>${esc(t.policy)}</dd>${t.forms.length ? `<dt>Forms</dt><dd>${t.forms.map(esc).join(' · ')}</dd>` : ''}<dt>Last reviewed</dt><dd>${fmtDate(t.reviewed)}</dd></dl>
+      <div class="callout info"><b>Did this answer your question?</b><div class="btns" style="margin-top:8px"><button class="btn sm" data-act="helpful">Yes</button><button class="btn sm" data-act="askFrom" data-id="${t.id}" data-kind="Advice">No, ask HR</button><button class="btn primary sm" data-act="askFrom" data-id="${t.id}" data-kind="Report">Report an issue to HR</button></div></div></div>`;
+  }
+  const q = S.search.toLowerCase();
+  const list = S.topics.filter(t => t.active && (!q || (t.name + t.group + t.steps.join(' ')).toLowerCase().includes(q)));
+  return `<div class="head"><div><h2>HR guidance for managers</h2><p class="muted">Approved steps for common situations. Ask HR for advice or report an issue for HR to act on.</p></div><div class="btns"><button class="btn" data-act="askFrom" data-id="" data-kind="Advice">Ask HR</button><button class="btn primary" data-act="askFrom" data-id="" data-kind="Report">Report an issue</button></div></div>
+    <label>Search topics<input id="search" type="search" value="${esc(S.search)}" placeholder="e.g. probation, absence, conduct" data-live="search"></label>
+    <div class="grid">${list.map(t => `<button class="card" data-act="openTopic" data-id="${t.id}"><span class="small muted">${esc(t.group)}</span><span class="t">${esc(t.name)}</span><span class="small muted">${t.steps.length} steps · reviewed ${fmtDate(t.reviewed)}</span></button>`).join('') || '<div class="empty">No topic matches. Use Ask HR.</div>'}</div>`;
+}
+function askForm() {
+  const t = topic(S.askTopic); const report = S.askKind === 'Report';
+  return `<form class="panel" data-form="ask"><div class="head"><h2>${report ? 'Report an issue to HR' : 'Ask HR for advice'}</h2><button type="button" class="btn sm" data-act="back">Back</button></div>
+    ${t ? `<dl class="kv"><dt>Topic</dt><dd>${esc(t.name)}</dd></dl>` : ''}
+    ${report ? `<label>Type of issue<select id="a-issue" name="issue" data-live="issue">${ISSUE_TYPES.map(i => `<option ${t && ((t.id === 'cond' && i === 'Conduct concern') || (t.id === 'perf' && i === 'Performance concern') || (t.id === 'leave' && i === 'Attendance or absence') || (t.id === 'griev' && i === 'Grievance in my team')) ? 'selected' : ''}>${i}</option>`).join('')}</select></label>` : ''}
+    <label>What is happening?<span class="hint">Facts, dates, who saw it and what you have already done.</span><textarea id="a-text" name="text" required style="min-height:120px"></textarea></label>
+    <div class="fields"><label>Employee involved${report ? '' : ' (optional)'}<input id="a-emp" name="emp" placeholder="Name and employee ID" ${report ? 'required' : ''}></label><label>Urgency<select id="a-urg" name="urgency"><option>Normal</option><option>Urgent</option></select></label></div>
+    ${report ? `<fieldset class="panel" style="padding:12px;gap:8px" id="route-set"><legend class="small" style="font-weight:600">Who should receive it?</legend>
+      <label class="check"><input type="checkbox" checked disabled> HR (always included)</label>
+      <label class="check"><input type="checkbox" name="chief" id="a-chief"> ${esc(LEADS(STAFF.div).chief)}</label>
+      <label class="check"><input type="checkbox" name="director" id="a-director"> ${esc(LEADS(STAFF.div).director)}</label>
+      <p class="hint" id="route-note" hidden>Sexual harassment reports go to HR only.</p></fieldset>
+      <label>Evidence (optional)<input id="a-file" type="file" name="file" multiple></label>` : ''}
+    <p class="small muted">Only HR${report ? ' and the people you choose above' : ''} can see this.</p>
+    <div class="btns"><button class="btn primary">Send to HR</button></div></form>`;
+}
+function staffMine() {
+  const mine = S.requests.filter(r => r.sid === STAFF.id);
+  if (!mine.length) return `<div class="empty">You have not contacted HR yet.</div>`;
+  return `<h2>My HR requests</h2>` + mine.map(r => `<div class="panel"><div class="head"><div><h3>${r.kind === 'Report' ? esc(r.issue) : 'Advice: ' + esc(topic(r.topic)?.name || 'Other')}</h3><p class="mono muted">${r.ref} · ${fmtDate(r.at)} · ${r.urgency}</p></div>${pill(r.status)}</div>
+    <p>${esc(r.text)}</p>
+    ${r.caseRef ? `<div class="callout info">HR has opened a case for this. Details are confidential; HR will contact you if they need you.</div>` : ''}
+    ${r.msgs.length ? `<div class="thread">${r.msgs.map(m => `<div class="msg ${m.by === 'Mgr' ? 'me' : ''}"><div class="by">${m.by === 'HR' ? 'People & Culture' : 'You'}</div>${esc(m.t)}</div>`).join('')}</div>` : ''}
+    ${r.status !== 'Closed' ? `<form data-form="mgrMsg" data-ref="${r.ref}" class="fields"><label>Reply to HR<textarea id="mm-${r.ref.replaceAll('/', '-')}" name="t" required></textarea></label><div class="btns"><button class="btn">Send</button></div></form>` : ''}
+  </div>`).join('');
+}
+
+// ---------------- HR view ----------------
+// ---------------- Staff view (employee who is the subject of a case) ----------------
+const myLetters = () => S.cases.filter(c => c.eid === EMP.id).flatMap(c => c.letters.map((l, i) => ({ c, l, i }))).filter(x => x.l.status === 'Issued');
+function staffLetters() {
+  const items = myLetters();
+  return `<div class="head"><div><h2>My HR letters</h2><p class="muted">Confidential letters People & Culture has issued to you. Only you and HR can see them.</p></div></div>
+  ${items.length ? items.slice().reverse().map(({ c, l, i }) => { const due = l.tpl === 'sc' ? addWorkDays(l.issuedAt, 3) : null;
+    return `<div class="panel"><div class="head"><div><h3>${esc(l.name)}</h3><p class="mono muted">${l.ref} · issued ${fmtDate(l.issuedAt)} · case ${c.ref}</p></div>${l.ack ? '<span class="pill s-done">Acknowledged</span>' : '<span class="pill s-need">Please acknowledge</span>'}</div>
+      ${letterView(c, l, false)}
+      ${!l.ack ? `<div class="callout">Confirm you have received and read this letter. Acknowledging does not mean you agree with it.</div><div class="btns"><button class="btn primary" data-act="ackLetter" data-ref="${c.ref}" data-i="${i}">I acknowledge receipt</button></div>` : `<p class="small muted">You acknowledged this on ${fmtDate(l.ack.at)}.</p>`}
+      ${l.tpl === 'sc' ? (l.reply ? `<div class="msg me"><div class="by">Your written explanation · ${fmtDate(l.reply.at)}</div>${esc(l.reply.t)}</div>` : `<form data-form="scReply" data-ref="${c.ref}" data-i="${i}" class="panel" style="background:var(--surface-2);gap:10px"><h3>Your written explanation</h3><p class="small muted">Due ${fmtDate(due)}${new Date(due) < today ? ' (overdue)' : ''}. Only HR and, if the case is referred, the D&G Committee will read it.</p><label>Explanation<textarea id="sc-reply" name="t" required style="min-height:120px"></textarea></label><label>Supporting documents (optional)<input type="file" id="sc-file" name="file" multiple></label><div class="btns"><button class="btn primary" ${l.ack ? '' : 'disabled title="Acknowledge the letter first"'}>Submit explanation</button>${l.ack ? '' : '<span class="small muted">Acknowledge the letter first.</span>'}</div></form>`) : ''}
+    </div>`; }).join('') : '<div class="empty">You have no HR letters.</div>'}`;
+}
+function staffCases() {
+  const mine = S.cases.filter(c => c.eid === EMP.id);
+  return `<div class="head"><div><h2>My cases</h2><p class="muted">Where a case about you stands and what HR needs from you. Witness statements and HR notes are not shown.</p></div></div>
+  ${mine.length ? mine.map(c => { const si = STAGES.indexOf(c.stage); const pending = myLetters().filter(x => x.c === c && (!x.l.ack || (x.l.tpl === 'sc' && !x.l.reply)));
+    return `<div class="panel"><div class="head"><div><h3 class="mono">${c.ref}</h3><p class="muted">${esc(c.type)} · opened ${fmtDate(c.at)}</p></div>${pill(c.stage)}</div>
+      <div class="stage">${STAGES.filter(s => s !== 'D&G Committee' || c.dg).map(s => `<span class="${STAGES.indexOf(s) < si ? 'done' : s === c.stage ? 'on' : ''}">${s}</span>`).join('')}</div>
+      <dl class="kv"><dt>About</dt><dd>${esc(c.summary)}</dd><dt>HR officer</dt><dd>${esc(c.assignee || HR_ME)}</dd>${c.dg ? `<dt>D&G hearing</dt><dd>${fmtDate(c.dgDate)}</dd>` : ''}${c.sanction ? `<dt>Outcome</dt><dd>${esc(c.sanction)}</dd>` : ''}</dl>
+      ${pending.length ? `<div class="callout"><b>Action needed:</b> ${pending.map(x => !x.l.ack ? `acknowledge “${esc(x.l.name)}”` : `submit your explanation for “${esc(x.l.name)}”`).join('; ')}. <button class="linkbtn" data-act="tab" data-id="letters">Go to My HR letters</button></div>` : '<p class="small muted">Nothing needed from you right now.</p>'}
+      <p class="small muted">You may be accompanied by a colleague at any meeting or hearing. Questions go to your HR officer.</p></div>`; }).join('') : '<div class="empty">There are no cases about you.</div>'}`;
+}
+function mgrTeamCases() {
+  const team = S.cases.filter(c => TEAM.some(n => c.employee === n) || S.requests.some(r => r.sid === STAFF.id && r.caseRef === c.ref));
+  return `<div class="head"><div><h2>Team cases</h2><p class="muted">Cases about people in your team, or that you reported. You see the stage only; letters, statements and HR notes stay with HR and the employee.</p></div></div>
+  <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Employee</th><th>Type</th><th>Stage</th><th>HR officer</th><th>Opened</th></tr></thead><tbody>
+  ${team.map(c => `<tr><td class="mono">${c.ref}</td><td>${esc(c.employee)}</td><td>${esc(c.type)}</td><td>${pill(c.stage)}</td><td>${esc(c.assignee || HR_ME)}</td><td>${fmtDate(c.at)}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">No cases about your team.</td></tr>'}</tbody></table></div>
+  <p class="viewnote"><span class="vchip">Need to act?</span> HR contacts you if they need a statement or your attendance at a hearing.</p>`;
+}
+function hrIntake() {
+  const r = reqBy(S.reqSel) || S.requests.find(x => x.status === 'New') || S.requests[0];
+  S.reqSel = r && r.ref;
+  const list = `<div class="list">${S.requests.map(x => `<button class="row" data-act="selReq" data-ref="${x.ref}" aria-current="${x.ref === S.reqSel}"><span class="t">${x.kind === 'Report' ? esc(x.issue) : 'Advice request'}</span>${pill(x.status)}<span class="m"><span class="mono">${x.ref}</span> · ${esc(x.mgr)} · ${x.urgency === 'Urgent' ? '<b style="color:var(--red)">Urgent</b>' : 'Normal'} · ${ageDays(x.at)} d</span></button>`).join('')}</div>`;
+  const newN = S.requests.filter(x => x.status === 'New').length;
+  return `<div class="head"><div><h2>Manager intake</h2><p class="muted">${newN} new. Decide whether each report becomes a case.</p></div></div><div class="split">${list}${r ? reqDetail(r) : ''}</div>`;
+}
+function reqDetail(r) {
+  return `<div class="panel"><div class="head"><div><h3 class="mono">${r.ref}</h3><p class="muted small">Received ${fmtDate(r.at)}</p></div>${pill(r.status)}</div>
+    <dl class="kv"><dt>Manager</dt><dd>${esc(r.mgr)} · <span class="mono">${esc(r.sid)}</span></dd><dt>Division</dt><dd>${esc(r.div)}</dd><dt>Type</dt><dd>${r.kind === 'Report' ? esc(r.issue) : 'Advice request'}</dd><dt>Employee</dt><dd>${esc(r.emp || 'Not named')}</dd><dt>Sent to</dt><dd>${esc(routeTxt(r.route, r.div))}</dd>${r.caseRef ? `<dt>Case</dt><dd><button class="linkbtn mono" data-act="gotoCase" data-ref="${r.caseRef}">${r.caseRef}</button></dd>` : ''}</dl>
+    <div class="callout info">${esc(r.text)}</div>
+    ${r.msgs.length ? `<div class="thread">${r.msgs.map(m => `<div class="msg ${m.by === 'HR' ? 'me' : ''}"><div class="by">${m.by === 'HR' ? 'HR' : esc(r.mgr)}</div>${esc(m.t)}</div>`).join('')}</div>` : ''}
+    ${r.status !== 'Closed' && !r.caseRef ? `<div class="btns"><button class="btn primary" data-act="openCase" data-ref="${r.ref}">Open as a case</button><button class="btn" data-act="noCase" data-ref="${r.ref}">No case needed</button></div>` : ''}
+    ${r.status !== 'Closed' ? `<form data-form="hrReply" data-ref="${r.ref}" style="display:flex;flex-direction:column;gap:8px"><label>Reply to manager<textarea id="hr-${r.ref.replaceAll('/', '-')}" name="t" required></textarea></label><div class="btns"><button class="btn">Send reply</button></div></form>` : ''}
+  </div>`;
+}
+function hrCases() {
+  if (S.caseSel) return caseDetail(caseBy(S.caseSel));
+  const f = S.caseFilter;
+  const rows = S.cases.filter(c => (f.stage === 'All' || (f.stage === 'Open' ? caseOpen(c) : f.stage === 'Overdue' ? caseOverdue(c) : c.stage === f.stage)) && (f.type === 'All' || c.type === f.type) && (f.dg === 'All' || (f.dg === 'Yes') === !!c.dg))
+    .sort((a, b) => (caseOverdue(b) - caseOverdue(a)) || new Date(b.at) - new Date(a.at));
+  const open = S.cases.filter(caseOpen);
+  return `<div class="head"><div><h2>Cases</h2><p class="muted">${S.cases.length} cases (${S.cases.filter(c => c.migrated).length} migrated from the current tracker) · ${open.length} open · ${open.filter(caseOverdue).length} overdue · ${open.filter(c => c.dg).length} with the D&G Committee</p></div><button class="btn primary" data-act="newCase">New case</button></div>
+  <div class="filters"><label>Stage<select data-live="cf" data-k="stage">${['Open', 'Overdue', ...STAGES, 'All'].map(o => `<option ${o === f.stage ? 'selected' : ''}>${o}</option>`).join('')}</select></label><label>Type<select data-live="cf" data-k="type">${['All', ...Object.keys(S.caseTypes)].map(o => `<option ${o === f.type ? 'selected' : ''}>${o}</option>`).join('')}</select></label><label>D&G Committee<select data-live="cf" data-k="dg">${['All', 'Yes', 'No'].map(o => `<option ${o === f.dg ? 'selected' : ''}>${o}</option>`).join('')}</select></label></div>
+  <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Employee</th><th>Type</th><th>Stage</th><th>D&G</th><th>Next due</th><th>Opened</th></tr></thead><tbody>
+  ${rows.map(c => { const n = caseSteps(c).find(s => !s.done); return `<tr><td><button class="linkbtn mono" data-act="gotoCase" data-ref="${c.ref}">${c.ref}</button>${c.migrated ? ' <span class="chip">Migrated</span>' : ''}</td><td>${esc(c.employee)}<br><span class="muted small">${esc(c.div)}</span></td><td>${esc(c.type)}</td><td>${pill(c.stage)}</td><td>${c.dg ? 'Yes' : 'No'}</td><td>${caseOpen(c) && n ? `<span class="small">${esc(n.label)}</span><br>${duePill(n.due)}` : '<span class="muted">–</span>'}</td><td class="small">${fmtDate(c.at)}</td></tr>`; }).join('') || '<tr><td colspan="7" class="muted">No cases match.</td></tr>'}
+  </tbody></table></div>`;
+}
+function caseDetail(c) {
+  const si = STAGES.indexOf(c.stage); const steps = caseSteps(c);
+  return `<div class="head"><div><button class="linkbtn" data-act="backCases">← All cases</button><h2 class="mono" style="margin-top:6px">${c.ref}</h2><p class="muted">${esc(c.type)}${c.formal && c.type.startsWith('Grievance') ? ' · formal' : ''} · opened ${fmtDate(c.at)}${c.migrated ? ' · migrated from current tracker' : ''}</p></div>${pill(c.stage)}</div>
+  <div class="stage" aria-label="Case stage">${STAGES.map((s, i) => `<span class="${i < si ? 'done' : i === si ? 'on' : ''}">${s}</span>`).join('')}</div>
+  <div class="split">
+   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="panel"><h3>Case details</h3><dl class="kv"><dt>Employee</dt><dd>${esc(c.employee)} · <span class="mono">${esc(c.eid)}</span></dd><dt>Division</dt><dd>${esc(c.div)}${c.grade ? ' · ' + esc(c.grade) : ''}</dd><dt>Raised by</dt><dd>${esc(c.raisedBy)}${c.source ? ` · <span class="mono">${c.source}</span>` : ''}</dd><dt>Summary</dt><dd>${esc(c.summary)}</dd><dt>Shared with</dt><dd>${esc(routeTxt(c.route, c.div))} <button class="linkbtn small" data-act="caseRoute" data-ref="${c.ref}">Change</button></dd><dt>Case officer</dt><dd>${esc(c.assignee || HR_ME)}</dd>${c.sanction ? `<dt>Outcome</dt><dd><b>${esc(c.sanction)}</b></dd>` : ''}</dl></div>
+    <div class="panel"><h3>Timeline</h3>${steps.length ? `<div class="steps">${steps.map((s, i) => `<div class="step"><span>${esc(s.label)}</span><span style="display:flex;gap:6px;align-items:center">${duePill(s.due, s.done)}${!s.done && caseOpen(c) ? `<button class="btn sm" data-act="stepDone" data-ref="${c.ref}" data-i="${i}">Done</button>` : ''}</span></div>`).join('')}</div>` : '<p class="muted small">Not timebound under the current policy settings.</p>'}</div>
+    <div class="panel"><h3>D&G Committee</h3>${c.dg ? `<dl class="kv"><dt>Referred</dt><dd>Yes</dd><dt>Hearing</dt><dd>${c.dgDate ? fmtDate(c.dgDate) : 'Not set'}</dd>${c.dgDecision ? `<dt>Committee decision</dt><dd>${esc(c.dgDecision)}</dd>` : ''}</dl>` : '<p class="muted small">Not referred to the Disciplinary & Grievance Committee.</p>'}
+      ${caseOpen(c) ? `<div class="btns">${!c.dg ? `<button class="btn" data-act="dgRefer" data-ref="${c.ref}">Refer to D&G Committee</button>` : `<button class="btn" data-act="dgRefer" data-ref="${c.ref}">Update hearing or decision</button><button class="btn sm" data-act="dgWithdraw" data-ref="${c.ref}">Withdraw referral</button>`}</div>` : ''}</div>
+    ${caseOpen(c) ? `<div class="panel"><h3>Move the case</h3><div class="btns">${si < 4 ? `<button class="btn primary" data-act="nextStage" data-ref="${c.ref}">Move to ${STAGES[si + 1]}</button>` : ''}<button class="btn dark" data-act="decide" data-ref="${c.ref}">Record decision and close</button></div></div>` : ''}
+   </div>
+   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="panel"><div class="head"><h3>Letters</h3>${caseOpen(c) ? `<button class="btn primary sm" data-act="newLetter" data-ref="${c.ref}">Generate letter</button>` : ''}</div>
+      ${c.letters.length ? `<div class="list">${c.letters.map((l, i) => `<button class="row" data-act="openLetter" data-ref="${c.ref}" data-i="${i}"><span class="t">${esc(l.name)}</span>${l.status === 'Issued' ? (l.ack ? '<span class="pill s-done">Acknowledged</span>' : l.handDelivered ? '<span class="pill s-done">Hand delivered</span>' : workDaysSince(l.issuedAt) > S.ackDays ? '<span class="pill s-need">Not acknowledged</span>' : '<span class="pill s-prog">Waiting for employee</span>') : pill(l.status)}<span class="m"><span class="mono">${l.ref || 'Reference on issue'}</span> · ${esc(l.drafter)}${l.reply ? ' · <b>explanation received</b>' : ''}</span></button>`).join('')}</div>` : '<p class="muted small">No letters yet. Letters use the disciplinary templates and fill case facts automatically.</p>'}</div>
+    <div class="panel"><h3>Case log</h3><div class="thread">${c.log.slice().reverse().map(l => `<div class="msg"><div class="by">${fmtDate(l.at)} · ${esc(l.by)}</div>${esc(l.t)}</div>`).join('')}</div>
+      ${caseOpen(c) ? `<form data-form="caseNote" data-ref="${c.ref}" class="fields"><label>Add to log<textarea id="cn-${c.ref.replaceAll('/', '-')}" name="t" required></textarea></label><div class="btns"><button class="btn">Add</button></div></form>` : ''}</div>
+   </div>
+  </div>`;
+}
+function fillLetter(tpl, c) {
+  const p = { date: fmtDate(c.at), allegation: c.summary.charAt(0).toLowerCase() + c.summary.slice(1), replyDays: '3', today: fmtDate(today), dgDate: c.dgDate ? fmtDate(c.dgDate) : '[hearing date]', ref: c.ref, sanction: (c.sanction || '[decision]').toLowerCase() };
+  return tpl.body.replace(/\{(\w+)\}/g, (m, k) => p[k] || m);
+}
+function letterView(c, l, editable) {
+  return `<div class="letter"><div class="lh"><span>People &amp; Culture · Strictly confidential</span><span>Ref: ${esc(l.ref || 'assigned on issue')}</span></div>
+    <p>${fmtDate(l.issuedAt || today)}</p><p>${esc(c.employee)}<br>${esc(c.eid)} · ${esc(c.div)}</p><p><b>${esc(l.name)}</b><br><span class="locked">Case ${esc(c.ref)}</span></p>
+    ${editable ? `<label class="small">Editable section<textarea id="letter-body">${esc(l.body)}</textarea></label>` : `<p>${esc(l.body)}</p>`}
+    <p class="locked">This letter and its contents are confidential and must not be shared.</p><p>Yours sincerely,<br><br>Authorised Signatory<br>People &amp; Culture</p></div>`;
+}
+function hrTopics() {
+  if (S.editTopic) {
+    const t = S.editTopic === 'new' ? { id: 'new', name: '', group: 'Performance', policy: '', steps: [''], forms: [] } : topic(S.editTopic);
+    return `<form class="panel" data-form="saveTopic" data-id="${t.id}"><h2>${t.id === 'new' ? 'New topic' : 'Edit topic'}</h2>
+      <div class="fields"><label>Topic name<input id="tp-name" name="name" value="${esc(t.name)}" required></label><label>Group<input id="tp-group" name="group" value="${esc(t.group)}"></label><label>Policy reference<input id="tp-policy" name="policy" value="${esc(t.policy)}"></label></div>
+      <label>Steps<span class="hint">One step per line.</span><textarea id="tp-steps" name="steps" style="min-height:140px">${esc(t.steps.join('\n'))}</textarea></label>
+      <label>Forms<span class="hint">One per line.</span><textarea id="tp-forms" name="forms">${esc(t.forms.join('\n'))}</textarea></label>
+      <div class="btns"><button class="btn primary">Publish</button><button type="button" class="btn" data-act="editTopic" data-id="">Cancel</button></div></form>`;
+  }
+  return `<div class="head"><div><h2>Guidance topics</h2><p class="muted">Published topics appear for managers straight away.</p></div><button class="btn primary" data-act="editTopic" data-id="new">New topic</button></div>
+  <div class="tablewrap"><table><thead><tr><th>Topic</th><th>Group</th><th>Last reviewed</th><th class="num">Views</th><th>Status</th><th></th></tr></thead><tbody>
+  ${S.topics.map(t => `<tr><td><b>${esc(t.name)}</b></td><td>${esc(t.group)}</td><td>${fmtDate(t.reviewed)}${ageDays(t.reviewed) > 150 ? ' <span class="pill s-need">Review due</span>' : ''}</td><td class="num">${t.views}</td><td>${pill(t.active ? 'Published' : 'Retired')}</td><td><div class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-act="editTopic" data-id="${t.id}">Edit</button><button class="btn sm" data-act="toggleTopic" data-id="${t.id}">${t.active ? 'Retire' : 'Restore'}</button></div></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function hrSettings() {
+  return `<h2>Settings</h2><p class="muted">Sample values. HR sets these to match the Disciplinary Procedure, Grievance Procedure and Sexual Harassment Policy.</p>
+  <div class="panel"><h3>Case types and timelines</h3><p class="muted small">Working days from the case opening date, excluding Friday and Saturday.</p>
+  <form data-form="saveTypes"><div class="tablewrap"><table><thead><tr><th>Case type</th><th>Timebound</th><th>Steps and working days</th></tr></thead><tbody>
+  ${Object.entries(S.caseTypes).map(([k, t], i) => `<tr><td><b>${esc(k)}</b></td><td><input type="checkbox" name="tb_${i}" aria-label="${esc(k)} timebound" ${t.timebound ? 'checked' : ''} ${k === SH ? 'disabled' : ''}></td><td><div style="display:flex;flex-direction:column;gap:6px">${t.steps.map(([l, d], j) => `<label class="check small" style="align-items:center;justify-content:space-between">${esc(l)} <input type="number" min="0" max="120" name="d_${i}_${j}" value="${d}" style="width:80px" aria-label="${esc(k)} ${esc(l)} days"></label>`).join('')}</div></td></tr>`).join('')}
+  </tbody></table></div><div class="btns" style="margin-top:10px"><button class="btn primary">Save timelines</button></div></form>
+  <p class="small muted">Any case can be handled as a formal grievance or not. Formal grievances and sexual harassment cases are always timebound.</p></div>
+  <div class="panel"><h3>Letters to employees</h3><form data-form="saveAck" class="fields"><label>Days to acknowledge before HR is flagged<input type="number" min="1" max="10" id="ack-days" name="ackDays" value="${S.ackDays}"></label><div class="btns"><button class="btn sm">Save</button></div></form><p class="muted small">Issued disciplinary letters go to the employee's My HR letters. If not acknowledged in time, the case shows "Not acknowledged" and HR records hand delivery.</p></div>
+  <div class="panel"><h3>D&G Committee</h3><div class="tablewrap"><table><tbody>${S.committee.map(([r, n]) => `<tr><td class="muted" style="width:120px">${r}</td><td>${esc(n)}</td></tr>`).join('')}</tbody></table></div><p class="muted small">Sample composition for confirmation.</p></div>
+  <div class="panel"><h3>Disciplinary letter templates</h3><p class="muted small">Shared with the Automation Bot template library. Issued letters get a PC/DL reference number automatically.</p>
+  <div class="tablewrap"><table><thead><tr><th>Letter</th><th>Version</th></tr></thead><tbody>${S.letterTpls.map(t => `<tr><td>${esc(t.name)}</td><td class="mono">v${t.v}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="panel"><h3>Microsoft 365</h3><p class="muted small">Later phase: Outlook calendar invites for hearings, Teams notices, SharePoint evidence storage and Entra ID sign-in. Not part of this CR.</p></div>`;
+}
+function hrInsights() {
+  const byType = Object.keys(S.caseTypes).map(k => [k, S.cases.filter(c => c.type === k).length]);
+  const byStage = STAGES.map(s => [s, S.cases.filter(c => c.stage === s).length]);
+  const closed = S.cases.filter(c => c.closedAt);
+  const avg = closed.length ? Math.round(closed.reduce((s, c) => s + (new Date(c.closedAt) - new Date(c.at)) / 86400000, 0) / closed.length) : 0;
+  const bars = rows => { const m = Math.max(...rows.map(r => r[1]), 1); return `<div class="bars">${rows.map(([n, v]) => `<div class="bar-row"><span>${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${v / m * 100}%"></div></div><span class="v">${v}</span></div>`).join('')}</div>`; };
+  return `<h2>Insights</h2><p class="muted small">Based on the sample cases in this prototype.</p>
+  <div class="stats"><div class="stat"><div class="n">${S.cases.filter(caseOpen).length}</div><div class="l">Open cases</div></div><div class="stat"><div class="n">${S.cases.filter(caseOverdue).length}</div><div class="l">Overdue against policy</div></div><div class="stat"><div class="n">${S.cases.filter(c => c.dg).length}</div><div class="l">Referred to D&G Committee</div></div><div class="stat"><div class="n">${avg}</div><div class="l">Average days to close</div></div></div>
+  <div class="split"><div class="panel"><h3>Cases by type</h3>${bars(byType)}</div><div class="panel"><h3>Cases by stage</h3>${bars(byStage)}</div></div>
+  <div class="panel"><h3>Manager requests</h3><p>${S.requests.length} requests · ${S.requests.filter(r => r.caseRef).length} became cases · ${S.requests.filter(r => r.status === 'Closed' && !r.caseRef).length} closed with advice only</p></div>`;
+}
+
+function createCase(data, extra) {
+  const ref = makeRef('ER');
+  const c = { ref, type: data.type, formal: data.type !== 'Grievance (informal)' && data.type !== 'Performance', employee: data.employee, eid: data.eid || '', div: data.div, grade: '', raisedBy: extra.raisedBy, source: extra.source, summary: data.summary, stage: 'Intake', route: data.type === SH ? ['HR'] : ['HR', ...(data.chief ? ['Division Chief'] : []), ...(data.director ? ['Division Director'] : [])], dg: false, at: today.toISOString(), log: [{ at: today.toISOString(), by: HR_ME, t: `Case opened${extra.source ? ' from ' + extra.source : ''}.` }], letters: [], assignee: HR_ME, done: {} };
+  S.cases.unshift(c); return c;
+}
+function caseForm(prefill) {
+  return `<form data-form="newCase" data-src="${prefill.source || ''}" style="display:flex;flex-direction:column;gap:12px"><h2>${prefill.source ? 'Open as a case' : 'New case'}</h2>
+    <div class="fields"><label>Case type<select id="nc-type" name="type">${Object.keys(S.caseTypes).map(k => `<option ${k === prefill.type ? 'selected' : ''}>${k}</option>`).join('')}</select></label><label>Division<select id="nc-div" name="div">${DIVS.map(d => `<option ${d === prefill.div ? 'selected' : ''}>${d}</option>`).join('')}</select></label></div>
+    <div class="fields"><label>Employee<input id="nc-emp" name="employee" value="${esc(prefill.employee || '')}" required></label><label>Employee ID<input id="nc-eid" name="eid" value="${esc(prefill.eid || '')}"></label></div>
+    <label>Summary<textarea id="nc-sum" name="summary" required>${esc(prefill.summary || '')}</textarea></label>
+    <fieldset class="panel" style="padding:12px;gap:6px"><legend class="small" style="font-weight:600">Share with</legend><label class="check"><input type="checkbox" checked disabled> HR (always)</label><label class="check"><input type="checkbox" name="chief" ${prefill.route?.includes('Division Chief') ? 'checked' : ''}> Division Chief</label><label class="check"><input type="checkbox" name="director" ${prefill.route?.includes('Division Director') ? 'checked' : ''}> Division Director</label><span class="hint">Sexual harassment cases are shared with HR only.</span></fieldset>
+    <p class="small muted">The case gets an ER reference number automatically. Timelines follow the settings for its type.</p>
+    <div class="btns"><button class="btn primary">Open case</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`;
+}
+
+function workDaysSince(d) { let n = 0; const x = new Date(d); while (x < today) { x.setDate(x.getDate() + 1); if (x < today && x.getDay() !== 5 && x.getDay() !== 6) n++; } return n; }
+const APP = {
+  key: 'pm', refBase: { PM: 21, ER: 41, 'PC/DL': 37 },
+  statusClass,
+  who: { staff: `<span>Signed in as <b>${EMP.name}</b></span><span>· ${EMP.title}, ${EMP.dept}</span>`, manager: `<span>Signed in as <b>${STAFF.name}</b></span><span>· ${STAFF.title} · ${STAFF.reports} direct reports, including ${EMP.name}</span>`, hr: `<span>Signed in as <b>${HR_ME}</b></span><span>· People &amp; Culture · Employee Relations</span>` },
+  tabs: { staff: [['letters', 'My HR letters'], ['mycases', 'My cases']], manager: [['guide', 'Guidance'], ['mine', 'My HR requests'], ['team', 'Team cases']], hr: [['intake', 'Manager intake'], ['cases', 'Cases'], ['topics', 'Guidance topics'], ['settings', 'Settings'], ['insights', 'Insights']] },
+  badge: (v, id) => v === 'staff' && id === 'letters' ? myLetters().filter(x => !x.l.ack || (x.l.tpl === 'sc' && !x.l.reply)).length : v === 'hr' && id === 'intake' ? S.requests.filter(r => r.status === 'New').length : v === 'hr' && id === 'cases' ? S.cases.filter(caseOverdue).length : 0,
+  views: { staff: { letters: staffLetters, mycases: staffCases }, manager: { guide: staffGuide, mine: staffMine, team: mgrTeamCases }, hr: { intake: hrIntake, cases: hrCases, topics: hrTopics, settings: hrSettings, insights: hrInsights } },
+  actions: {
+    openTopic: d => { S.topicSel = d.id; const t = topic(d.id); t.views++; render(); },
+    back: () => { S.topicSel = null; S.askTopic = undefined; render(); },
+    helpful: () => { S.topicSel = null; render(); toast('Thanks. Glad that helped'); },
+    askFrom: d => { S.askTopic = d.id || null; S.askKind = d.kind; render(); },
+    selReq: d => { S.reqSel = d.ref; render(); },
+    gotoCase: d => { UI.tab.hr = 'cases'; S.caseSel = d.ref; render(); window.scrollTo({ top: 0 }); },
+    backCases: () => { S.caseSel = null; render(); },
+    openCase: d => { const r = reqBy(d.ref); const [employee, eid] = (r.emp || '').split(/,\s*(?=EMP)/); const type = { 'Conduct concern': 'Disciplinary', 'Attendance or absence': 'Disciplinary', 'Performance concern': 'Performance', 'Grievance in my team': 'Grievance (formal)', [SH]: SH }[r.issue] || 'Grievance (informal)'; S.pending = r.ref; openModal(caseForm({ source: r.ref, type, div: r.div, employee: employee || '', eid: eid || '', summary: r.text, route: r.route })); },
+    noCase: d => openModal(`<form data-form="noCase" data-ref="${d.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>No case needed</h2><label>Advice to the manager<textarea id="nc-adv" name="t" required></textarea></label><div class="btns"><button class="btn primary">Send and close</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`),
+    newCase: () => { S.pending = null; openModal(caseForm({ type: 'Disciplinary', div: 'Retail Banking' })); },
+    caseRoute: d => { const c = caseBy(d.ref); if (c.type === SH) { toast('Sexual harassment cases stay with HR only'); return; } openModal(`<form data-form="caseRoute" data-ref="${c.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Share with</h2><label class="check"><input type="checkbox" checked disabled> HR (always)</label><label class="check"><input type="checkbox" name="chief" ${c.route.includes('Division Chief') ? 'checked' : ''}> ${esc(LEADS(c.div).chief)}</label><label class="check"><input type="checkbox" name="director" ${c.route.includes('Division Director') ? 'checked' : ''}> ${esc(LEADS(c.div).director)}</label><div class="btns"><button class="btn primary">Save</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`); },
+    stepDone: d => { const c = caseBy(d.ref); c.done = c.done || {}; c.done[d.i] = today.toISOString(); c.log.push({ at: today.toISOString(), by: HR_ME, t: `${caseSteps(c)[+d.i].label}: done.` }); render(); toast('Step marked done'); },
+    nextStage: d => { const c = caseBy(d.ref); const i = STAGES.indexOf(c.stage); if (STAGES[i + 1] === 'D&G Committee' && !c.dg) { c.stage = 'Decision'; c.log.push({ at: today.toISOString(), by: HR_ME, t: 'Moved to Decision (not referred to D&G Committee).' }); } else { c.stage = STAGES[i + 1]; c.log.push({ at: today.toISOString(), by: HR_ME, t: `Moved to ${c.stage}.` }); } render(); toast(`Case moved to ${c.stage}`); },
+    dgRefer: d => { const c = caseBy(d.ref); openModal(`<form data-form="dg" data-ref="${c.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>D&G Committee</h2><label>Hearing date<input type="date" id="dg-date" name="date" value="${c.dgDate ? c.dgDate.slice(0, 10) : ''}" required></label><label>Committee decision (after the hearing)<select id="dg-dec" name="decision"><option value="">Not decided yet</option>${SANCTIONS.map(s => `<option ${c.dgDecision === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label><div class="btns"><button class="btn primary">Save</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`); },
+    dgWithdraw: d => { const c = caseBy(d.ref); c.dg = false; c.dgDate = null; c.dgDecision = null; c.log.push({ at: today.toISOString(), by: HR_ME, t: 'D&G Committee referral withdrawn.' }); render(); toast('Referral withdrawn'); },
+    decide: d => { const c = caseBy(d.ref); openModal(`<form data-form="decide" data-ref="${c.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Record decision and close</h2><label>Decision<select id="dc-s" name="sanction">${SANCTIONS.map(s => `<option ${(c.dgDecision || '') === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label><label>Notes<textarea id="dc-n" name="notes"></textarea></label><p class="muted small">Generate the warning or outcome letter from the Letters panel before closing.</p><div class="btns"><button class="btn dark">Close case</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`); },
+    newLetter: d => openModal(`<form data-form="newLetter" data-ref="${d.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Generate letter</h2><label>Template<select id="nl-t" name="tpl">${S.letterTpls.map(t => `<option value="${t.id}">${esc(t.name)} (v${t.v})</option>`).join('')}</select></label><p class="muted small">Employee, case and hearing details fill in from the case.</p><div class="btns"><button class="btn primary">Create draft</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`),
+    openLetter: d => { const c = caseBy(d.ref); const l = c.letters[+d.i]; const mine = l.drafter === HR_ME;
+      openModal(`<div class="head"><h2>${esc(l.name)}</h2><button class="btn sm" data-act="closeModal">Close</button></div>${letterView(c, l, l.status === 'Draft')}
+      <div class="btns" style="align-items:center">${l.status === 'Draft' ? `<button class="btn primary" data-act="letterCheck" data-ref="${c.ref}" data-i="${d.i}">Send for second HR check</button>` : ''}${l.status === 'Awaiting check' ? (mine ? `<button class="btn" disabled>Check and issue</button><span class="muted small">You drafted this. A second HR user must check it.</span><button class="btn dark sm" data-act="letterIssue" data-ref="${c.ref}" data-i="${d.i}">Check and issue as ${HR_2}</button>` : `<button class="btn primary" data-act="letterIssue" data-ref="${c.ref}" data-i="${d.i}">Check and issue</button>`) : ''}${l.status === 'Issued' ? `<span class="muted small">Issued ${fmtDate(l.issuedAt)} to the employee's My HR letters.</span>` : ''}</div>
+      ${l.status === 'Issued' ? `<dl class="kv"><dt>Acknowledged</dt><dd>${l.ack ? fmtDate(l.ack.at) + ' by the employee in ESS' : l.handDelivered ? `Hand delivered ${fmtDate(l.handDelivered.at)} by ${esc(l.handDelivered.by)}` : 'Not yet'}</dd>${l.tpl === 'sc' ? `<dt>Explanation</dt><dd>${l.reply ? `Received ${fmtDate(l.reply.at)}` : `Due ${fmtDate(addWorkDays(l.issuedAt, 3))}`}</dd>` : ''}</dl>
+      ${l.reply ? `<div class="msg"><div class="by">Employee's written explanation</div>${esc(l.reply.t)}</div>` : ''}
+      ${!l.ack && !l.handDelivered ? `<div class="btns"><button class="btn sm" data-act="handDeliver" data-ref="${c.ref}" data-i="${d.i}">Record hand delivery</button><span class="small muted">Use if the employee has not acknowledged within ${S.ackDays} working days.</span></div>` : ''}` : ''}`); },
+    ackLetter: d => { const c = caseBy(d.ref); const l = c.letters[+d.i]; l.ack = { at: today.toISOString() }; c.log.push({ at: today.toISOString(), by: c.employee, t: `${l.name} (${l.ref}) acknowledged in ESS.` }); render(); toast('Acknowledged. HR has been told'); },
+    handDeliver: d => { const c = caseBy(d.ref); const l = c.letters[+d.i]; l.handDelivered = { at: today.toISOString(), by: HR_ME }; c.log.push({ at: today.toISOString(), by: HR_ME, t: `${l.name} (${l.ref}) delivered by hand.` }); closeModal(); render(); toast('Hand delivery recorded'); },
+    letterCheck: d => { const c = caseBy(d.ref); const l = c.letters[+d.i]; const b = $('#letter-body'); if (b) l.body = b.value; l.status = 'Awaiting check'; c.log.push({ at: today.toISOString(), by: HR_ME, t: `${l.name} sent for check.` }); closeModal(); render(); toast('Sent for second HR check'); },
+    letterIssue: d => { const c = caseBy(d.ref); const l = c.letters[+d.i]; l.ref = makeRef('PC/DL'); l.status = 'Issued'; l.issuedAt = today.toISOString(); l.checker = l.drafter === HR_ME ? HR_2 : HR_ME; c.log.push({ at: today.toISOString(), by: l.checker, t: `${l.name} issued, ${l.ref}.` }); closeModal(); render(); toast(`Letter ${l.ref} issued`); },
+    editTopic: d => { S.editTopic = d.id || null; render(); },
+    toggleTopic: d => { const t = topic(d.id); t.active = !t.active; render(); toast(t.active ? 'Topic restored' : 'Topic retired; managers no longer see it'); },
+  },
+  forms: {
+    scReply: (data, f) => { const c = caseBy(f.dataset.ref); const l = c.letters[+f.dataset.i]; l.reply = { t: data.t, at: today.toISOString() }; c.done = c.done || {}; const idx = (S.caseTypes[c.type]?.steps || []).findIndex(s => /reply/i.test(s[0])); if (idx >= 0) c.done[idx] = today.toISOString(); c.log.push({ at: today.toISOString(), by: c.employee, t: `Written explanation submitted for ${l.ref}.` }); render(); toast('Explanation submitted to HR'); },
+    ask: data => {
+      const report = S.askKind === 'Report'; const ref = makeRef('PM'); const sh = data.issue === SH;
+      S.requests.unshift({ ref, kind: report ? 'Report' : 'Advice', issue: report ? data.issue : 'Advice', topic: S.askTopic || 'other', mgr: STAFF.name, sid: STAFF.id, div: STAFF.div, urgency: data.urgency, status: 'New', at: today.toISOString(), text: data.text, emp: data.emp, route: ['HR', ...(!sh && data.chief ? ['Division Chief'] : []), ...(!sh && data.director ? ['Division Director'] : [])], msgs: [] });
+      S.askTopic = undefined; S.topicSel = null; UI.tab.manager = 'mine'; render(); toast(`Sent to HR. Your reference is ${ref}`);
+    },
+    mgrMsg: (data, f) => { const r = reqBy(f.dataset.ref); r.msgs.push({ by: 'Mgr', t: data.t }); render(); toast('Reply sent to HR'); },
+    hrReply: (data, f) => { const r = reqBy(f.dataset.ref); r.msgs.push({ by: 'HR', t: data.t }); if (!r.caseRef) r.status = 'Responded'; render(); toast('Reply sent to the manager'); },
+    noCase: (data, f) => { const r = reqBy(f.dataset.ref); r.msgs.push({ by: 'HR', t: data.t }); r.status = 'Closed'; closeModal(); render(); toast('Closed with advice; no case opened'); },
+    newCase: (data, f) => {
+      const src = f.dataset.src; const c = createCase(data, { raisedBy: src ? 'Line manager' : 'HR', source: src || null });
+      if (src) { const r = reqBy(src); r.caseRef = c.ref; r.status = 'Case opened'; r.msgs.push({ by: 'HR', t: 'Thank you. HR has opened a case and will contact you if we need anything further.' }); }
+      closeModal(); UI.tab.hr = 'cases'; S.caseSel = c.ref; render(); toast(`Case ${c.ref} opened`);
+    },
+    caseRoute: (data, f) => { const c = caseBy(f.dataset.ref); c.route = ['HR', ...(data.chief ? ['Division Chief'] : []), ...(data.director ? ['Division Director'] : [])]; c.log.push({ at: today.toISOString(), by: HR_ME, t: `Shared with: ${routeTxt(c.route, c.div)}.` }); closeModal(); render(); toast('Sharing updated'); },
+    dg: (data, f) => { const c = caseBy(f.dataset.ref); const first = !c.dg; c.dg = true; c.dgDate = new Date(data.date).toISOString(); c.dgDecision = data.decision || null; if (first) { c.stage = 'D&G Committee'; if (!c.route.includes('Division Director') && c.type !== SH) c.route.push('Division Director'); } c.log.push({ at: today.toISOString(), by: HR_ME, t: first ? `Referred to D&G Committee; hearing ${fmtDate(c.dgDate)}.` : `D&G Committee updated${c.dgDecision ? ': decision ' + c.dgDecision : ''}.` }); closeModal(); render(); toast(first ? 'Referred to D&G Committee' : 'D&G details saved'); },
+    decide: (data, f) => { const c = caseBy(f.dataset.ref); c.sanction = data.sanction; c.stage = 'Closed'; c.closedAt = today.toISOString(); c.log.push({ at: today.toISOString(), by: HR_ME, t: `Closed. Decision: ${data.sanction}.${data.notes ? ' ' + data.notes : ''}` }); closeModal(); render(); toast('Case closed'); },
+    newLetter: (data, f) => { const c = caseBy(f.dataset.ref); const t = S.letterTpls.find(x => x.id === data.tpl); c.letters.push({ tpl: t.id, name: t.name, v: t.v, body: fillLetter(t, c), status: 'Draft', drafter: HR_ME }); c.log.push({ at: today.toISOString(), by: HR_ME, t: `Draft created: ${t.name}.` }); closeModal(); render(); APP.actions.openLetter({ ref: c.ref, i: String(c.letters.length - 1) }); },
+    caseNote: (data, f) => { caseBy(f.dataset.ref).log.push({ at: today.toISOString(), by: HR_ME, t: data.t }); render(); toast('Added to case log'); },
+    saveTopic: (data, f) => {
+      const vals = { name: data.name, group: data.group, policy: data.policy, steps: data.steps.split('\n').map(s => s.trim()).filter(Boolean), forms: data.forms.split('\n').map(s => s.trim()).filter(Boolean), reviewed: today.toISOString().slice(0, 10) };
+      if (f.dataset.id === 'new') S.topics.push({ id: 't' + Date.now(), views: 0, active: true, ...vals }); else Object.assign(topic(f.dataset.id), vals);
+      S.editTopic = null; render(); toast(`${vals.name} published`);
+    },
+    saveAck: data => { S.ackDays = Math.max(1, +data.ackDays || 2); render(); toast('Saved'); },
+    saveTypes: data => { Object.entries(S.caseTypes).forEach(([k, t], i) => { t.timebound = k === SH || k === 'Grievance (formal)' ? true : !!data['tb_' + i]; t.steps.forEach((s, j) => { s[1] = Math.max(0, +data[`d_${i}_${j}`] || 0); }); }); render(); toast('Timelines saved; due dates updated'); },
+  },
+};
+document.addEventListener('input', e => {
+  if (e.target.dataset.live === 'search') { S.search = e.target.value; const pos = e.target.selectionStart; render(); const s = $('#search'); s.focus(); s.setSelectionRange(pos, pos); }
+});
+document.addEventListener('change', e => {
+  if (e.target.dataset.live === 'cf') { S.caseFilter[e.target.dataset.k] = e.target.value; render(); }
+  if (e.target.dataset.live === 'issue') { const sh = e.target.value === SH; ['#a-chief', '#a-director'].forEach(s => { const i = $(s); i.disabled = sh; if (sh) i.checked = false; }); $('#route-note').hidden = !sh; }
+});
+
+loadSaved();
+render();
+</script>

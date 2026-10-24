@@ -1,0 +1,2 @@
+reference,case_type,formal,employee_id,employee_name,division,grade,source_type,source_reference,summary,stage,route_division_chief,route_division_director,dg_referred,dg_hearing_date,dg_decision,decision,case_officer,opened_at,closed_at
+ER/2026/0001,disciplinary,true,EMP 00000,Example Name,Retail Banking,G4,migrated,,Example: repeated unauthorised absence,investigation,true,false,false,,,,Case officer name,2026-06-01,

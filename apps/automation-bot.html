@@ -1,0 +1,434 @@
+<title>Automation Bot</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>/* Layout: app bar with Staff|HR toggle, tab row, single content column (list + detail split on wide screens) */
+:root{
+  --bg:#f6f4f4; --surface:#ffffff; --surface-2:#f0ecec; --line:#e2dbdb; --ink:#1a1416; --muted:#6b5f62;
+  --red:#c8102e; --red-ink:#ffffff; --red-soft:#fbe9ec; --black:#1a1416;
+  --ok:#1d7a46; --ok-soft:#e3f3e9; --warn:#a15c00; --warn-soft:#fbf0dc; --info:#355c9a; --info-soft:#e6edf8; --grey-soft:#ece8e8;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Public Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#1a1416}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{background:#1a1416;color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;border-bottom:3px solid #c8102e}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{width:36px;height:36px;border-radius:6px;background:#c8102e;display:grid;place-items:center;font:700 15px var(--f-display);flex:none}
+.app{font:700 18px/1.2 var(--f-display);letter-spacing:.01em}
+.sub{font-size:12px;color:#c9bcbf;letter-spacing:.04em;text-transform:uppercase}
+.toggle{display:flex;background:#2e2629;border-radius:999px;padding:3px}
+.toggle button{border:0;background:transparent;color:#d8cdd0;font:600 14px var(--f-body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:#c8102e;color:#fff}
+.toggle button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.who{font-size:12px;color:#c9bcbf;width:100%;display:flex;gap:6px;flex-wrap:wrap}
+.who b{color:#fff;font-weight:600}
+.proto{background:var(--surface-2);color:var(--muted);font-size:12.5px;border-bottom:1px solid var(--line)}
+.proto .wrap{padding-block:6px}
+.tabs{border-bottom:1px solid var(--line);background:var(--surface)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:12px 12px 10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+main .wrap{padding-block:20px 48px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h2{font-size:21px} h3{font-size:16px}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.mono{font-family:var(--f-mono);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.card:hover{border-color:var(--red)}
+.card[aria-current="true"]{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.card .t{font-weight:700}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--surface-2)}
+.row[aria-current="true"]{background:var(--red-soft)}
+.row .t{font-weight:600;min-width:0}
+.row .m{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-new{background:var(--info-soft);color:var(--info)}
+.s-prog{background:var(--warn-soft);color:var(--warn)}
+.s-need{background:var(--red-soft);color:var(--red)}
+.s-done{background:var(--ok-soft);color:var(--ok)}
+.s-off{background:var(--grey-soft);color:var(--muted)}
+label{font-weight:600;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+.hint{font-weight:400;color:var(--muted);font-size:12.5px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+textarea{min-height:90px;resize:vertical}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:500}
+.check input{width:auto;margin-top:3px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 10px;font-size:13px}
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:14px}
+dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.thread{display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 12px;border-radius:8px;background:var(--surface-2);max-width:90%;font-size:14px}
+.msg.me{align-self:flex-end;background:var(--red-soft)}
+.msg.note{background:var(--warn-soft);border:1px dashed var(--warn);max-width:100%}
+.msg .by{font-size:12px;color:var(--muted);margin-bottom:2px}
+.callout{border-left:3px solid var(--red);background:var(--red-soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:14px}
+.callout.info{border-color:var(--info);background:var(--info-soft)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:minmax(110px,180px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13.5px}
+.bar-track{height:12px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:var(--red);border-radius:3px}
+.bar-row .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .n{font:700 26px var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.letter{background:#fff;color:#1a1416;border:1px solid var(--line);border-radius:4px;padding:28px;font-family:Georgia,"Times New Roman",serif;font-size:14.5px;line-height:1.6;display:flex;flex-direction:column;gap:12px}
+.letter .lh{display:flex;justify-content:space-between;border-bottom:2px solid #c8102e;padding-bottom:8px;font-family:var(--f-display);font-size:13px}
+.letter .locked{background:#f3f0f0;border-radius:3px;padding:0 3px}
+.letter textarea{font:inherit;color:#1a1416;background:#fff8e6;border:1px dashed #a15c00}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.scrim{position:fixed;inset:0;background:rgba(10,6,8,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.dialog{background:var(--surface);border-radius:10px;max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+.stars{display:flex;gap:4px}
+.stars button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:36px;height:36px;cursor:pointer;font-weight:700;color:var(--ink)}
+.stars button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.tag[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.card,.row,.btn{transition:border-color .15s,background .15s}}
+.linkbtn{background:none;border:0;padding:0;color:var(--red);font:inherit;text-decoration:underline;cursor:pointer}
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 12px;border-top:1px solid var(--line);font-size:14px;align-items:center}
+.step:first-child{border-top:0}
+.stage{display:flex;gap:4px;flex-wrap:wrap}
+.stage span{font-size:12px;padding:4px 10px;border-radius:4px;background:var(--surface-2);color:var(--muted);font-weight:600}
+.stage span.on{background:var(--ink);color:var(--surface)}
+.stage span.done{background:var(--ok-soft);color:var(--ok)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);margin:0 4px 4px 0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.filters label{min-width:150px;flex:1}
+.fields > .btns{align-self:end}
+.viewnote{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.vchip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--muted)}
+.subtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.subtoggle button{border:0;background:none;padding:5px 12px;border-radius:999px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
+.subtoggle button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+</style>
+<header class="bar"><div class="wrap">
+  <div class="brand"><span class="mark" aria-hidden="true">AB</span><div><div class="app">Automation Bot</div><div class="sub">People &amp; Culture · Reference letter requests</div></div></div>
+  <div class="toggle" role="group" aria-label="Switch view"><button type="button" data-view="staff" aria-pressed="true">Staff</button><button type="button" data-view="manager" aria-pressed="false">Manager</button><button type="button" data-view="hr" aria-pressed="false">HR</button></div>
+  <div class="who" id="who"></div>
+</div></header>
+<div class="proto"><div class="wrap"><a class="linkbtn" href="../index.html">All apps</a> · Prototype with sample data for the CR review. Not connected to ESS or HRIS. Changes are kept in this browser only. <button type="button" class="linkbtn" data-act="resetData">Reset sample data</button></div></div>
+<nav class="tabs" role="tablist" id="tabs"><div class="wrap"></div></nav>
+<main id="main"><div class="wrap"></div></main>
+<div id="modal"></div><div id="toast" role="status" aria-live="polite" hidden></div>
+<script>
+// Shared shell: Staff|HR toggle, tabs, actions, modal, toast
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const UI = { view: 'staff', tab: null };
+const VIEW_NAMES = { staff: 'Staff', manager: 'Manager', hr: 'HR' };
+const pill = (status) => `<span class="pill ${APP.statusClass[status] || 's-off'}">${esc(status)}</span>`;
+const today = new Date();
+const fmtDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString(); };
+const ageDays = d => Math.max(0, Math.round((today - new Date(d)) / 86400000));
+// Reference numbers: <PREFIX>/<YEAR>/<4-digit sequence>, sequential per prefix and year, never reused or edited
+function makeRef(prefix) {
+  S.counters = S.counters || {};
+  const n = (S.counters[prefix] = (S.counters[prefix] ?? (APP.refBase?.[prefix] || 0)) + 1);
+  return `${prefix}/${today.getFullYear()}/${String(n).padStart(4, '0')}`;
+}
+// Working days: Maldives weekend is Friday and Saturday
+function addWorkDays(from, n) {
+  const d = new Date(from); let added = 0;
+  while (added < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 5 && w !== 6) added++; }
+  return d.toISOString();
+}
+function duePill(due, doneAt) {
+  if (doneAt) return `<span class="pill s-done">Done ${fmtDate(doneAt)}</span>`;
+  const days = Math.round((new Date(due) - today) / 86400000);
+  if (days < 0) return `<span class="pill s-need">Overdue ${-days} d</span>`;
+  if (days <= 2) return `<span class="pill s-prog">Due ${days === 0 ? 'today' : 'in ' + days + ' d'}</span>`;
+  return `<span class="pill s-off">Due ${fmtDate(due)}</span>`;
+}
+const STORE_KEY = () => `bml-pc-proto-v3-${APP.key}`;
+function save() { try { localStorage.setItem(STORE_KEY(), JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }
+function loadSaved() { try { const v = localStorage.getItem(STORE_KEY()); if (v) Object.assign(S, JSON.parse(v)); } catch (e) { /* storage unavailable */ } }
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function openModal(html) { $('#modal').innerHTML = `<div class="scrim" data-act="closeModalBg"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal input, #modal textarea, #modal select, #modal button'); f && f.focus(); }
+function closeModal() { $('#modal').innerHTML = ''; }
+
+function render() {
+  if (!UI.tab) UI.tab = Object.fromEntries(Object.entries(APP.tabs).map(([k, v]) => [k, v[0][0]]));
+  document.querySelectorAll('.toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === UI.view)));
+  $('#who').innerHTML = APP.who[UI.view];
+  $('#tabs .wrap').innerHTML = APP.tabs[UI.view].map(([id, label]) => {
+    const n = APP.badge ? APP.badge(UI.view, id) : '';
+    return `<button role="tab" aria-selected="${UI.tab[UI.view] === id}" data-act="tab" data-id="${id}">${esc(label)}${n ? ` (${n})` : ''}</button>`;
+  }).join('');
+  $('#main .wrap').innerHTML = APP.views[UI.view][UI.tab[UI.view]]();
+  save();
+}
+
+const ACTIONS = {
+  tab: d => { UI.tab[UI.view] = d.id; render(); window.scrollTo({ top: 0 }); },
+  closeModal: () => closeModal(),
+  resetData: () => { try { localStorage.removeItem(STORE_KEY()); } catch (e) {} location.reload(); },
+  closeModalBg: (d, el, e) => { if (e.target === el) closeModal(); },
+};
+
+document.addEventListener('click', e => {
+  const v = e.target.closest('.toggle button');
+  if (v) { UI.view = v.dataset.view; render(); window.scrollTo({ top: 0 }); toast(`Switched to ${VIEW_NAMES[v.dataset.view]} view`); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const fn = ACTIONS[a.dataset.act] || APP.actions[a.dataset.act];
+  if (fn) { fn(a.dataset, a, e); }
+});
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-form]');
+  if (!f) return;
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f, e.submitter).entries());
+  APP.forms[f.dataset.form](data, f);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Automation Bot — reference letters
+const STAFF = { name: 'Aishath Nazla', id: 'EMP 10432', title: 'Senior Officer', dept: 'Retail Banking – Hulhumalé Branch', joined: '2019-03-17', status: 'Permanent', passport: 'LA0●●●●●2', nid: 'A0●●●●●9', salary: 'MVR 18,500' };
+const MGR = { name: 'Ahmed Naseer', id: 'EMP 05521', title: 'Branch Manager', dept: 'Retail Banking – Hulhumalé Branch' };
+const HR_ME = 'Mariyam Shifa (HR)';
+const HR_2 = 'Ahmed Ilham (HR)';
+const ACCESS_FIELDS = {
+  addressee: ['Addressed to', 'e.g. Embassy of India, Malé'],
+  purpose: ['Purpose', 'What the letter is for'],
+  country: ['Destination country', ''],
+  from: ['Travel from', 'date'], to: ['Travel to', 'date'],
+  institution: ['Institution', ''], course: ['Course or programme', ''],
+  absence: ['Dates of absence or exam', 'e.g. 3–5 Nov 2026'],
+  org: ['Receiving organisation', ''], release: ['Proposed release date', 'date'],
+  employer: ['Prospective employer', ''], role: ['Role applied for', ''],
+  bank: ['Financial institution', ''],
+};
+const S = {
+  templates: [
+    { id: 'visa', name: 'Visa Letter', v: 3, active: true, fields: ['addressee', 'country', 'from', 'to', 'purpose'], salary: true, desc: 'For an embassy or consulate, confirming employment and approved leave.', body: 'This is to certify that {name} ({id}) has been employed with the Bank since {joined} and currently holds the position of {title}, {dept}. {name} will be travelling to {country} from {from} to {to} for {purpose}, and will resume duties on return.' },
+    { id: 'ger', name: 'General Employment Record', v: 2, active: true, fields: ['addressee', 'purpose'], desc: 'Confirms dates of service and current position.', body: 'This is to certify that {name} ({id}) has been employed with the Bank since {joined} on {status} terms and currently holds the position of {title}, {dept}.' },
+    { id: 'aex', name: 'Academic Excuse', v: 1, active: true, endorse: true, fields: ['institution', 'course', 'absence'], desc: 'Explains absence from classes or exams due to work.', body: 'We confirm that {name}, {title}, {dept}, was required at work during {absence} and was therefore unable to attend {course} at {institution}.' },
+    { id: 'aref', name: 'Academic Reference', v: 1, active: true, fields: ['institution', 'course'], desc: 'Supports an application for study.', body: 'We are pleased to confirm that {name} has served the Bank since {joined} as {title}, {dept}, and is applying for {course} at {institution}.' },
+    { id: 'rel', name: 'Release Staff Reference', v: 1, active: true, endorse: true, fields: ['org', 'release', 'purpose'], desc: 'For a release to another organisation.', body: 'This letter confirms that {name} ({id}), {title}, may be released to {org} with effect from {release} for {purpose}, subject to the Bank\'s policies.' },
+    { id: 'job', name: 'Job Opportunity Reference', v: 1, active: true, fields: ['employer', 'role'], desc: 'For an application to another employer.', body: 'This is to confirm that {name} has been employed with the Bank since {joined} and currently serves as {title}, {dept}. We understand {name} is applying for the role of {role} at {employer}.' },
+    { id: 'fin', name: 'Financial Reference', v: 2, active: true, fields: ['bank', 'purpose'], salary: true, desc: 'For a loan or account with a financial institution.', body: 'This is to certify that {name} ({id}) has been employed with the Bank since {joined} on {status} terms as {title}, {dept}, and is submitting this letter to {bank} for {purpose}.' },
+  ],
+  requests: [
+    { ref: 'PC/RL/2026/0031', tpl: 'fin', staff: STAFF.name, sid: STAFF.id, mgr: MGR.name, status: 'Issued', letterRef: 'PC/LTR/2026/0118', at: daysAgo(9), issued: daysAgo(7), data: { bank: 'Bank of Ceylon, Malé', purpose: 'a housing loan application' }, salary: 'yes', drafter: 'Hawwa Nisha (HR)', checker: HR_2, msgs: [] },
+    { ref: 'PC/RL/2026/0038', tpl: 'aex', staff: STAFF.name, sid: STAFF.id, mgr: MGR.name, endorsed: { by: MGR.name, at: daysAgo(3), note: 'Confirmed: Aishath covered the branch on those dates.' }, status: 'Information needed', at: daysAgo(3), data: { institution: 'Villa College', course: 'BSc Business Information Systems', absence: '' }, msgs: [{ by: 'HR', t: 'Please add the dates of the missed exam so we can complete the letter.' }] },
+    { ref: 'PC/RL/2026/0033', tpl: 'visa', staff: 'Ibrahim Rasheed', sid: 'EMP 08817', status: 'Submitted', at: daysAgo(2), data: { addressee: 'Embassy of Sri Lanka, Malé', country: 'Sri Lanka', from: '2026-11-12', to: '2026-11-19', purpose: 'a family visit' }, salary: 'no', msgs: [] },
+    { ref: 'PC/RL/2026/0036', tpl: 'ger', staff: 'Fathimath Leeza', sid: 'EMP 11920', mgr: MGR.name, status: 'In progress', at: daysAgo(1), data: { addressee: 'To whom it may concern', purpose: 'a tenancy application' }, drafter: HR_ME, msgs: [] },
+    { ref: 'PC/RL/2026/0040', tpl: 'rel', staff: 'Hawwa Raufa', sid: 'EMP 12011', mgr: MGR.name, status: 'Awaiting manager endorsement', at: daysAgo(1), data: { org: 'Ministry of Finance', release: '2026-12-01', purpose: 'a 12-month secondment' }, msgs: [] },
+    { ref: 'PC/RL/2026/0039', tpl: 'job', staff: 'Mohamed Shiyam', sid: 'EMP 07733', mgr: MGR.name, status: 'Awaiting check', at: daysAgo(1), data: { employer: 'Maldives Monetary Authority', role: 'Analyst' }, drafter: 'Hawwa Nisha (HR)', msgs: [] },
+  ],
+  sel: null, draftTpl: null, editTpl: null,
+};
+const tplOf = id => S.templates.find(t => t.id === id);
+const fill = (r) => {
+  const t = tplOf(r.tpl); const p = { ...STAFF, ...(r.staff === STAFF.name ? {} : { name: r.staff, id: r.sid }), joined: fmtDate(STAFF.joined), ...r.data };
+  Object.keys(p).forEach(k => { if (/^\d{4}-\d\d-\d\d$/.test(p[k])) p[k] = fmtDate(p[k]); });
+  return (r.body || t.body).replace(/\{(\w+)\}/g, (m, k) => p[k] ? p[k] : `[${k}]`);
+};
+
+const letterHtml = (r, editable) => {
+  const t = tplOf(r.tpl);
+  const salaryLine = t.salary && r.salary === 'yes' ? `<p>Current monthly salary: <span class="locked">${STAFF.salary}</span> (included with the employee's consent).</p>` : '';
+  return `<div class="letter" aria-label="Letter preview">
+    <div class="lh"><span>People &amp; Culture</span><span>Ref: ${esc(r.letterRef || 'assigned on issue')}</span></div>
+    <p>${fmtDate(r.issued || today)}</p>
+    <p>${esc(r.data.addressee || r.data.bank || r.data.institution || r.data.employer || r.data.org || 'To whom it may concern')}</p>
+    <p><b>${esc(t.name)}</b></p>
+    ${editable ? `<label class="small">Editable section<textarea id="draft-body">${esc(fill(r))}</textarea></label>` : `<p>${esc(fill(r))}</p>`}
+    ${salaryLine}
+    <p class="locked">This letter is issued at the request of the employee and confers no liability on the Bank.</p>
+    <p>Yours sincerely,<br><br>Authorised Signatory<br>People &amp; Culture</p>
+  </div>`;
+};
+
+const statusClass = { 'Awaiting manager endorsement': 's-prog', 'Declined by manager': 's-off', 'Submitted': 's-new', 'In progress': 's-prog', 'Awaiting check': 's-prog', 'Information needed': 's-need', 'Issued': 's-done', 'Cancelled': 's-off' };
+
+function staffRequest() {
+  if (S.draftTpl) {
+    const t = tplOf(S.draftTpl);
+    return `<div class="panel"><div class="head"><div><h2>${esc(t.name)}</h2><p class="muted">${esc(t.desc)}</p></div><button class="btn sm" data-act="pickTpl" data-id="">Change letter</button></div>
+      ${t.endorse ? `<div class="callout info">This letter needs your line manager's endorsement first. ${esc(MGR.name)} is asked to confirm it, then HR prepares it.</div>` : ''}
+      <form data-form="newRequest" class="fields">
+        ${t.fields.map(f => { const [l, h] = ACCESS_FIELDS[f]; return `<label>${l}${h && h !== 'date' ? `<span class="hint">${h}</span>` : ''}<input id="f-${f}" name="${f}" type="${h === 'date' ? 'date' : 'text'}" required></label>`; }).join('')}
+        ${t.salary ? `<label class="check" style="grid-column:1/-1"><input type="checkbox" id="f-salary" name="salary" value="yes"> Include my salary in this letter. I consent to HR sharing it with the addressee.</label>` : ''}
+        <div class="btns" style="grid-column:1/-1"><button class="btn primary" type="submit">Submit request</button></div>
+      </form></div>
+      <p class="muted small">HR fills your name, position, department and joining date from your employee record.</p>`;
+  }
+  return `<div class="head"><div><h2>Request a letter</h2><p class="muted">Choose the letter you need. HR prepares it and you download it here.</p></div></div>
+    <div class="grid">${S.templates.filter(t => t.active).map(t => `<button class="card" data-act="pickTpl" data-id="${t.id}"><span class="t">${esc(t.name)}</span><span class="muted small">${esc(t.desc)}</span></button>`).join('')}</div>`;
+}
+function staffMine() {
+  const mine = S.requests.filter(r => r.staff === STAFF.name);
+  if (!mine.length) return `<div class="empty">You have no letter requests yet.</div>`;
+  return `<h2>My requests</h2>` + mine.map(r => {
+    const t = tplOf(r.tpl);
+    return `<div class="panel"><div class="head"><div><h3>${esc(t.name)}</h3><p class="mono muted">${r.ref} · submitted ${fmtDate(r.at)}</p></div>${pill(staffStatus(r.status))}</div>
+      ${r.endorsed ? `<p class="small muted">Endorsed by ${esc(r.endorsed.by)} on ${fmtDate(r.endorsed.at)}.</p>` : ''}
+      ${r.msgs.length ? `<div class="thread">${r.msgs.map(m => `<div class="msg ${m.by === 'Staff' ? 'me' : ''}"><div class="by">${m.by === 'HR' ? 'People & Culture' : m.by === 'Manager' ? esc(r.mgr) + ' (your manager)' : 'You'}</div>${esc(m.t)}</div>`).join('')}</div>` : ''}
+      ${r.status === 'Information needed' ? `<form data-form="staffReply" data-ref="${r.ref}" class="fields"><label>Your reply<textarea name="t" id="reply-${r.ref}" required></textarea></label><div class="btns"><button class="btn primary">Send reply</button></div></form>` : ''}
+      <div class="btns">${r.status === 'Issued' ? `<button class="btn primary" data-act="viewLetter" data-ref="${r.ref}">View letter</button>` : ''}${['Submitted', 'Awaiting manager endorsement'].includes(r.status) ? `<button class="btn" data-act="cancel" data-ref="${r.ref}">Cancel request</button>` : ''}</div>
+    </div>`;
+  }).join('');
+}
+const staffStatus = s => (s === 'Awaiting check' ? 'In progress' : s);
+
+function mgrTeam() {
+  const team = S.requests.filter(r => r.mgr === MGR.name && r.staff !== MGR.name);
+  const waiting = team.filter(r => r.status === 'Awaiting manager endorsement');
+  const fieldsShown = r => Object.entries(r.data).map(([k, v]) => `<dt>${ACCESS_FIELDS[k][0]}</dt><dd>${esc(/^\d{4}-/.test(v) ? fmtDate(v) : v)}</dd>`).join('');
+  return `<div class="head"><div><h2>Team letter requests</h2><p class="muted">Letters your direct reports have asked for. You see the letter type and status; contents and salary details stay between the employee and HR.</p></div></div>
+    <div class="panel"><h3>Needs your endorsement${waiting.length ? ` (${waiting.length})` : ''}</h3>
+    ${waiting.length ? waiting.map(r => `<div class="panel" style="background:var(--surface-2)"><div class="head"><div><b>${esc(tplOf(r.tpl).name)}</b> · ${esc(r.staff)}<p class="mono muted">${r.ref} · ${fmtDate(r.at)}</p></div>${pill(r.status)}</div><dl class="kv">${fieldsShown(r)}</dl>
+      <form data-form="endorse" data-ref="${r.ref}" class="fields"><label>Comment for the employee and HR<textarea id="en-${r.ref.replaceAll('/', '-')}" name="note" placeholder="Optional when endorsing; required when declining"></textarea></label><div class="btns"><button class="btn primary" name="go" value="yes">Endorse</button><button class="btn" name="go" value="no">Decline</button></div></form></div>`).join('') : '<p class="muted small">Nothing waiting. Release Staff Reference and Academic Excuse letters come to you before HR.</p>'}</div>
+    <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Employee</th><th>Letter</th><th>Status</th><th>Submitted</th></tr></thead><tbody>
+    ${team.map(r => `<tr><td class="mono">${r.ref}</td><td>${esc(r.staff)}</td><td>${esc(tplOf(r.tpl).name)}</td><td>${pill(staffStatus(r.status))}</td><td>${fmtDate(r.at)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No requests from your team.</td></tr>'}
+    </tbody></table></div>
+    <p class="viewnote"><span class="vchip">Your own letters</span> Switch to the Staff view to request a letter for yourself.</p>`;
+}
+function hrQueue() {
+  const open = S.requests.filter(r => !['Issued', 'Cancelled'].includes(r.status));
+  const r = S.requests.find(x => x.ref === S.sel) || open[0] || S.requests[0];
+  S.sel = r && r.ref;
+  const list = `<div class="list" role="list">${S.requests.slice().sort((a, b) => order(a) - order(b) || new Date(a.at) - new Date(b.at)).map(x => `<button class="row" role="listitem" data-act="sel" data-ref="${x.ref}" aria-current="${x.ref === S.sel}"><span class="t">${esc(tplOf(x.tpl).name)}</span>${pill(x.status)}<span class="m"><span class="mono">${x.ref}</span> · ${esc(x.staff)} · ${ageDays(x.at)} d old</span></button>`).join('')}</div>`;
+  const withMgr = S.requests.filter(x => x.status === 'Awaiting manager endorsement').length;
+  return `<div class="head"><div><h2>Letter requests</h2><p class="muted">${open.length} open · oldest ${Math.max(...open.map(o => ageDays(o.at)), 0)} days${withMgr ? ` · ${withMgr} waiting for manager endorsement` : ''}</p></div></div><div class="split">${list}${r ? hrDetail(r) : ''}</div>`;
+}
+const order = r => ({ 'Awaiting manager endorsement': 3.5, 'Declined by manager': 6, 'Submitted': 0, 'Awaiting check': 1, 'In progress': 2, 'Information needed': 3, 'Issued': 4, 'Cancelled': 5 }[r.status]);
+function hrDetail(r) {
+  const t = tplOf(r.tpl);
+  const facts = `<dl class="kv"><dt>Employee</dt><dd>${esc(r.staff)} · <span class="mono">${esc(r.sid)}</span></dd><dt>Letter</dt><dd>${esc(t.name)} (template v${t.v})</dd>${Object.entries(r.data).map(([k, v]) => `<dt>${ACCESS_FIELDS[k][0]}</dt><dd>${esc(/^\d{4}-/.test(v) ? fmtDate(v) : v) || '<span class="muted">Not given</span>'}</dd>`).join('')}${t.salary ? `<dt>Salary</dt><dd>${r.salary === 'yes' ? 'Include (consent given)' : 'Do not include'}</dd>` : ''}${r.drafter ? `<dt>Drafted by</dt><dd>${esc(r.drafter)}</dd>` : ''}${r.checker ? `<dt>Checked by</dt><dd>${esc(r.checker)}</dd>` : ''}${t.endorse ? `<dt>Manager endorsement</dt><dd>${r.endorsed ? `${esc(r.endorsed.by)}, ${fmtDate(r.endorsed.at)}${r.endorsed.note ? ` – “${esc(r.endorsed.note)}”` : ''}` : r.status === 'Declined by manager' ? 'Declined' : `Waiting for ${esc(r.mgr || 'line manager')}`}</dd>` : ''}</dl>`;
+  let actions = '';
+  if (r.status === 'Submitted') actions = `<button class="btn primary" data-act="pickup" data-ref="${r.ref}">Pick up and draft</button><button class="btn" data-act="askInfo" data-ref="${r.ref}">Ask for information</button>`;
+  if (r.status === 'In progress') actions = `<button class="btn primary" data-act="sendCheck" data-ref="${r.ref}">Send for check</button><button class="btn" data-act="askInfo" data-ref="${r.ref}">Ask for information</button>`;
+  if (r.status === 'Awaiting check') actions = r.drafter === HR_ME ? `<button class="btn" disabled>Check and issue</button><span class="muted small">You drafted this letter. A second HR user must check it.</span><button class="btn dark sm" data-act="actAs2" data-ref="${r.ref}">Check as ${HR_2}</button>` : `<button class="btn primary" data-act="issue" data-ref="${r.ref}">Check and issue</button><button class="btn" data-act="returnDraft" data-ref="${r.ref}">Return to drafter</button>`;
+  if (r.status === 'Information needed') actions = `<span class="muted small">Waiting for the employee to reply.</span>`;
+  if (r.status === 'Awaiting manager endorsement') actions = `<span class="muted small">Waiting for the line manager to endorse. HR can start once it is endorsed.</span>`;
+  if (r.status === 'Declined by manager') actions = `<span class="muted small">Declined by the line manager. The employee has been told.</span>`;
+  return `<div class="panel"><div class="head"><div><h3 class="mono">${r.ref}</h3><p class="muted small">Received ${fmtDate(r.at)}</p></div>${pill(r.status)}</div>
+    ${facts}
+    ${r.msgs.length ? `<div class="thread">${r.msgs.map(m => `<div class="msg ${m.by === 'HR' ? 'me' : ''}"><div class="by">${m.by === 'HR' ? 'HR' : m.by === 'Manager' ? esc(r.mgr) + ' (line manager)' : esc(r.staff)}</div>${esc(m.t)}</div>`).join('')}</div>` : ''}
+    ${['In progress', 'Awaiting check', 'Issued'].includes(r.status) ? `<p class="small muted">Grey text is locked by the template. Employee facts come from HRIS.</p>${letterHtml(r, r.status === 'In progress')}` : ''}
+    <div class="btns" style="align-items:center">${actions}</div></div>`;
+}
+function hrTemplates() {
+  if (S.editTpl) {
+    const t = S.editTpl === 'new' ? { id: 'new', name: '', desc: '', body: 'This is to confirm that {name} ({id}) has been employed with the Bank since {joined} as {title}, {dept}.', fields: ['addressee', 'purpose'], v: 0 } : tplOf(S.editTpl);
+    return `<form class="panel" data-form="saveTpl" data-id="${t.id}"><h2>${t.id === 'new' ? 'New template' : 'Edit ' + esc(t.name)}</h2>
+      <div class="fields"><label>Letter name<input id="t-name" name="name" value="${esc(t.name)}" required></label><label>Short description for staff<input id="t-desc" name="desc" value="${esc(t.desc)}"></label></div>
+      <label>Letter wording<span class="hint">Employee facts: {name} {id} {title} {dept} {joined} {status}. Staff answers use the question keys below.</span><textarea id="t-body" name="body" style="min-height:130px">${esc(t.body)}</textarea></label>
+      <label class="check"><input type="checkbox" name="endorse" id="t-endorse" ${t.endorse ? 'checked' : ''}> Needs line manager endorsement before HR drafts it</label>
+      <fieldset class="panel" style="padding:12px"><legend class="small" style="font-weight:600">Questions staff answer</legend><div class="tags">${Object.entries(ACCESS_FIELDS).map(([k, [l]]) => `<label class="check small"><input type="checkbox" name="q_${k}" ${t.fields.includes(k) ? 'checked' : ''}> ${l} <span class="mono muted">{${k}}</span></label>`).join('')}</div></fieldset>
+      <div class="btns"><button class="btn primary">${t.id === 'new' ? 'Publish template' : 'Publish as v' + (t.v + 1)}</button><button class="btn" type="button" data-act="editTpl" data-id="">Cancel</button></div></form>`;
+  }
+  return `<div class="head"><div><h2>Letter templates</h2><p class="muted">Changes publish as a new version. Requests in progress keep their version.</p></div><button class="btn primary" data-act="editTpl" data-id="new">New template</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Letter</th><th>Version</th><th>Questions</th><th>Manager endorsement</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.templates.map(t => `<tr><td><b>${esc(t.name)}</b><br><span class="muted small">${esc(t.desc)}</span></td><td class="mono">v${t.v}</td><td>${t.fields.length}</td><td>${t.endorse ? 'Required' : '<span class="muted">No</span>'}</td><td>${pill(t.active ? 'Active' : 'Retired')}</td><td><div class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-act="editTpl" data-id="${t.id}">Edit</button><button class="btn sm" data-act="toggleTpl" data-id="${t.id}">${t.active ? 'Retire' : 'Restore'}</button></div></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="panel"><h3>Disciplinary letters</h3><p class="muted small">HR-only templates in the same library. Staff never see them. HR generates them from a case in People Manager; issued letters get a PC/DL reference number.</p>
+    <div class="tablewrap"><table><thead><tr><th>Letter</th><th>Used at stage</th></tr></thead><tbody>${DISC.map((n, i) => `<tr><td>${n}</td><td class="muted">${['Show cause', 'Investigation', 'D&G Committee', 'Decision', 'Decision', 'Closed'][i]}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function hrReport() {
+  const counts = S.templates.map(t => [t.name, S.requests.filter(r => r.tpl === t.id).length]);
+  const max = Math.max(...counts.map(c => c[1]), 1);
+  const issued = S.requests.filter(r => r.status === 'Issued');
+  const tat = issued.length ? (issued.reduce((s, r) => s + (new Date(r.issued) - new Date(r.at)) / 86400000, 0) / issued.length).toFixed(1) : '–';
+  return `<h2>Report</h2><p class="muted small">Sample data, this month.</p>
+    <div class="stats"><div class="stat"><div class="n">${S.requests.length}</div><div class="l">Requests received</div></div><div class="stat"><div class="n">${issued.length}</div><div class="l">Letters issued</div></div><div class="stat"><div class="n">${tat}</div><div class="l">Average days, submission to issue</div></div><div class="stat"><div class="n">${S.requests.filter(r => !['Issued', 'Cancelled'].includes(r.status)).length}</div><div class="l">Open now</div></div></div>
+    <div class="panel"><h3>Requests by letter type</h3><div class="bars">${counts.map(([n, c]) => `<div class="bar-row"><span>${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${c / max * 100}%"></div></div><span class="v">${c}</span></div>`).join('')}</div></div>`;
+}
+
+const DISC = ['Notice of allegation and show cause', 'Suspension pending investigation', 'Invitation to D&G Committee hearing', 'Warning letter', 'Outcome letter', 'Case closure, no further action'];
+const APP = {
+  key: 'bot', refBase: { 'PC/RL': 41, 'PC/LTR': 118 },
+  statusClass: { ...statusClass, Active: 's-done', Retired: 's-off' },
+  who: { staff: `<span>Signed in as <b>${STAFF.name}</b></span><span>· ${STAFF.title}, ${STAFF.dept}</span>`, manager: `<span>Signed in as <b>${MGR.name}</b></span><span>· ${MGR.title} · line manager of ${STAFF.name} and 3 others</span>`, hr: `<span>Signed in as <b>${HR_ME}</b></span><span>· People &amp; Culture</span>` },
+  tabs: { staff: [['request', 'Request a letter'], ['mine', 'My requests']], manager: [['team', 'Team requests']], hr: [['queue', 'Requests'], ['templates', 'Templates'], ['report', 'Report']] },
+  badge: (v, id) => v === 'manager' ? S.requests.filter(r => r.mgr === MGR.name && r.status === 'Awaiting manager endorsement').length : v === 'hr' && id === 'queue' ? S.requests.filter(r => ['Submitted', 'Awaiting check'].includes(r.status)).length : v === 'staff' && id === 'mine' ? S.requests.filter(r => r.staff === STAFF.name && r.status === 'Information needed').length : 0,
+  views: { staff: { request: staffRequest, mine: staffMine }, manager: { team: mgrTeam }, hr: { queue: hrQueue, templates: hrTemplates, report: hrReport } },
+  actions: {
+    pickTpl: d => { S.draftTpl = d.id || null; render(); },
+    sel: d => { S.sel = d.ref; render(); },
+    cancel: d => { const r = S.requests.find(x => x.ref === d.ref); r.status = 'Cancelled'; render(); toast('Request cancelled'); },
+    viewLetter: d => { const r = S.requests.find(x => x.ref === d.ref); openModal(`<div class="head"><h2>${esc(tplOf(r.tpl).name)}</h2><button class="btn sm" data-act="closeModal">Close</button></div>${letterHtml(r, false)}<p class="muted small">In ESS this opens the issued PDF.</p>`); },
+    pickup: d => { const r = S.requests.find(x => x.ref === d.ref); r.status = 'In progress'; r.drafter = HR_ME; render(); toast('Draft created from template'); },
+    sendCheck: d => { const r = S.requests.find(x => x.ref === d.ref); const b = $('#draft-body'); if (b) r.body = b.value; r.status = 'Awaiting check'; render(); toast('Sent for a second HR check'); },
+    actAs2: d => { const r = S.requests.find(x => x.ref === d.ref); r.letterRef = makeRef('PC/LTR'); r.checker = HR_2; r.status = 'Issued'; r.issued = today.toISOString(); render(); toast(`Checked by ${HR_2} and issued`); },
+    issue: d => { const r = S.requests.find(x => x.ref === d.ref); r.letterRef = makeRef('PC/LTR'); r.checker = HR_ME; r.status = 'Issued'; r.issued = today.toISOString(); render(); toast('Letter issued to the employee'); },
+    returnDraft: d => { const r = S.requests.find(x => x.ref === d.ref); r.status = 'In progress'; render(); toast('Returned to drafter'); },
+    askInfo: d => openModal(`<form data-form="askInfo" data-ref="${d.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Ask the employee</h2><label>Message<textarea id="ask-msg" name="t" required>Please confirm </textarea></label><div class="btns"><button class="btn primary">Send</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`),
+    editTpl: d => { S.editTpl = d.id || null; render(); },
+    toggleTpl: d => { const t = tplOf(d.id); t.active = !t.active; render(); toast(t.active ? `${t.name} restored` : `${t.name} retired; staff no longer see it`); },
+  },
+  forms: {
+    newRequest: (data) => {
+      const t = tplOf(S.draftTpl); const { salary, ...rest } = data;
+      const ref = makeRef('PC/RL');
+      S.requests.unshift({ ref, tpl: t.id, staff: STAFF.name, sid: STAFF.id, mgr: MGR.name, status: t.endorse ? 'Awaiting manager endorsement' : 'Submitted', at: today.toISOString(), data: rest, salary: salary ? 'yes' : 'no', msgs: [] });
+      S.draftTpl = null; UI.tab.staff = 'mine'; render(); toast(t.endorse ? `Submitted (${ref}). Sent to ${MGR.name} to endorse` : `Submitted. Your reference is ${ref}`);
+    },
+    staffReply: (data, f) => { const r = S.requests.find(x => x.ref === f.dataset.ref); r.msgs.push({ by: 'Staff', t: data.t }); r.status = 'Submitted'; if (r.tpl === 'aex' && !r.data.absence) r.data.absence = data.t; render(); toast('Reply sent to HR'); },
+    endorse: (data, f) => {
+      const r = S.requests.find(x => x.ref === f.dataset.ref);
+      if (data.go === 'no' && !data.note.trim()) { toast('Add a comment to explain the decline'); return; }
+      if (data.go === 'yes') { r.endorsed = { by: MGR.name, at: today.toISOString(), note: data.note.trim() }; r.status = 'Submitted'; if (data.note.trim()) r.msgs.push({ by: 'Manager', t: data.note.trim() }); toast('Endorsed. Sent to HR'); }
+      else { r.status = 'Declined by manager'; r.msgs.push({ by: 'Manager', t: data.note.trim() }); toast('Declined. The employee has been told'); }
+      render();
+    },
+    askInfo: (data, f) => { const r = S.requests.find(x => x.ref === f.dataset.ref); r.msgs.push({ by: 'HR', t: data.t }); r.status = 'Information needed'; closeModal(); render(); toast('Question sent to the employee'); },
+    saveTpl: (data, f) => {
+      const fields = Object.keys(ACCESS_FIELDS).filter(k => data['q_' + k]);
+      if (f.dataset.id === 'new') { S.templates.push({ id: 't' + Date.now(), name: data.name, desc: data.desc, body: data.body, fields, endorse: !!data.endorse, v: 1, active: true }); toast(`${data.name} published; staff can request it now`); }
+      else { const t = tplOf(f.dataset.id); Object.assign(t, { name: data.name, desc: data.desc, body: data.body, fields, endorse: !!data.endorse, v: t.v + 1 }); toast(`${t.name} published as v${t.v}`); }
+      S.editTpl = null; render();
+    },
+  },
+};
+
+loadSaved();
+render();
+</script>

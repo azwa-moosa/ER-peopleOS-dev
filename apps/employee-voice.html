@@ -1,0 +1,448 @@
+<title>Employee Voice</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>/* Layout: app bar with Staff|HR toggle, tab row, single content column (list + detail split on wide screens) */
+:root{
+  --bg:#f6f4f4; --surface:#ffffff; --surface-2:#f0ecec; --line:#e2dbdb; --ink:#1a1416; --muted:#6b5f62;
+  --red:#c8102e; --red-ink:#ffffff; --red-soft:#fbe9ec; --black:#1a1416;
+  --ok:#1d7a46; --ok-soft:#e3f3e9; --warn:#a15c00; --warn-soft:#fbf0dc; --info:#355c9a; --info-soft:#e6edf8; --grey-soft:#ece8e8;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Public Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141012; --surface:#1d181a; --surface-2:#262022; --line:#352d30; --ink:#f3eeef; --muted:#a8999d;
+  --red:#ef4f66; --red-ink:#1a0a0d; --red-soft:#3a1a20; --black:#000000;
+  --ok:#6fd39a; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --info:#8fb3ef; --info-soft:#1c2840; --grey-soft:#2c2528; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#1a1416}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{background:#1a1416;color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;border-bottom:3px solid #c8102e}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{width:36px;height:36px;border-radius:6px;background:#c8102e;display:grid;place-items:center;font:700 15px var(--f-display);flex:none}
+.app{font:700 18px/1.2 var(--f-display);letter-spacing:.01em}
+.sub{font-size:12px;color:#c9bcbf;letter-spacing:.04em;text-transform:uppercase}
+.toggle{display:flex;background:#2e2629;border-radius:999px;padding:3px}
+.toggle button{border:0;background:transparent;color:#d8cdd0;font:600 14px var(--f-body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:#c8102e;color:#fff}
+.toggle button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.who{font-size:12px;color:#c9bcbf;width:100%;display:flex;gap:6px;flex-wrap:wrap}
+.who b{color:#fff;font-weight:600}
+.proto{background:var(--surface-2);color:var(--muted);font-size:12.5px;border-bottom:1px solid var(--line)}
+.proto .wrap{padding-block:6px}
+.tabs{border-bottom:1px solid var(--line);background:var(--surface)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:12px 12px 10px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+main .wrap{padding-block:20px 48px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h2{font-size:21px} h3{font-size:16px}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.mono{font-family:var(--f-mono);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.card:hover{border-color:var(--red)}
+.card[aria-current="true"]{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.card .t{font-weight:700}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--surface-2)}
+.row[aria-current="true"]{background:var(--red-soft)}
+.row .t{font-weight:600;min-width:0}
+.row .m{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-new{background:var(--info-soft);color:var(--info)}
+.s-prog{background:var(--warn-soft);color:var(--warn)}
+.s-need{background:var(--red-soft);color:var(--red)}
+.s-done{background:var(--ok-soft);color:var(--ok)}
+.s-off{background:var(--grey-soft);color:var(--muted)}
+label{font-weight:600;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+.hint{font-weight:400;color:var(--muted);font-size:12.5px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+textarea{min-height:90px;resize:vertical}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:500}
+.check input{width:auto;margin-top:3px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 10px;font-size:13px}
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:14px}
+dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.thread{display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 12px;border-radius:8px;background:var(--surface-2);max-width:90%;font-size:14px}
+.msg.me{align-self:flex-end;background:var(--red-soft)}
+.msg.note{background:var(--warn-soft);border:1px dashed var(--warn);max-width:100%}
+.msg .by{font-size:12px;color:var(--muted);margin-bottom:2px}
+.callout{border-left:3px solid var(--red);background:var(--red-soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:14px}
+.callout.info{border-color:var(--info);background:var(--info-soft)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:minmax(110px,180px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13.5px}
+.bar-track{height:12px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:var(--red);border-radius:3px}
+.bar-row .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .n{font:700 26px var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.letter{background:#fff;color:#1a1416;border:1px solid var(--line);border-radius:4px;padding:28px;font-family:Georgia,"Times New Roman",serif;font-size:14.5px;line-height:1.6;display:flex;flex-direction:column;gap:12px}
+.letter .lh{display:flex;justify-content:space-between;border-bottom:2px solid #c8102e;padding-bottom:8px;font-family:var(--f-display);font-size:13px}
+.letter .locked{background:#f3f0f0;border-radius:3px;padding:0 3px}
+.letter textarea{font:inherit;color:#1a1416;background:#fff8e6;border:1px dashed #a15c00}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.scrim{position:fixed;inset:0;background:rgba(10,6,8,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.dialog{background:var(--surface);border-radius:10px;max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+.stars{display:flex;gap:4px}
+.stars button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:36px;height:36px;cursor:pointer;font-weight:700;color:var(--ink)}
+.stars button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.tag[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.card,.row,.btn{transition:border-color .15s,background .15s}}
+.linkbtn{background:none;border:0;padding:0;color:var(--red);font:inherit;text-decoration:underline;cursor:pointer}
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 12px;border-top:1px solid var(--line);font-size:14px;align-items:center}
+.step:first-child{border-top:0}
+.stage{display:flex;gap:4px;flex-wrap:wrap}
+.stage span{font-size:12px;padding:4px 10px;border-radius:4px;background:var(--surface-2);color:var(--muted);font-weight:600}
+.stage span.on{background:var(--ink);color:var(--surface)}
+.stage span.done{background:var(--ok-soft);color:var(--ok)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);margin:0 4px 4px 0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.filters label{min-width:150px;flex:1}
+.fields > .btns{align-self:end}
+.viewnote{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.vchip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--muted)}
+.subtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.subtoggle button{border:0;background:none;padding:5px 12px;border-radius:999px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
+.subtoggle button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+</style>
+<header class="bar"><div class="wrap">
+  <div class="brand"><span class="mark" aria-hidden="true">EV</span><div><div class="app">Employee Voice</div><div class="sub">People &amp; Culture · Raise a concern</div></div></div>
+  <div class="toggle" role="group" aria-label="Switch view"><button type="button" data-view="staff" aria-pressed="true">Staff</button><button type="button" data-view="manager" aria-pressed="false">Manager</button><button type="button" data-view="hr" aria-pressed="false">HR</button></div>
+  <div class="who" id="who"></div>
+</div></header>
+<div class="proto"><div class="wrap"><a class="linkbtn" href="../index.html">All apps</a> · Prototype with sample data for the CR review. Not connected to ESS or HRIS. Changes are kept in this browser only. <button type="button" class="linkbtn" data-act="resetData">Reset sample data</button></div></div>
+<nav class="tabs" role="tablist" id="tabs"><div class="wrap"></div></nav>
+<main id="main"><div class="wrap"></div></main>
+<div id="modal"></div><div id="toast" role="status" aria-live="polite" hidden></div>
+<script>
+// Shared shell: Staff|HR toggle, tabs, actions, modal, toast
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const UI = { view: 'staff', tab: null };
+const VIEW_NAMES = { staff: 'Staff', manager: 'Manager', hr: 'HR' };
+const pill = (status) => `<span class="pill ${APP.statusClass[status] || 's-off'}">${esc(status)}</span>`;
+const today = new Date();
+const fmtDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString(); };
+const ageDays = d => Math.max(0, Math.round((today - new Date(d)) / 86400000));
+// Reference numbers: <PREFIX>/<YEAR>/<4-digit sequence>, sequential per prefix and year, never reused or edited
+function makeRef(prefix) {
+  S.counters = S.counters || {};
+  const n = (S.counters[prefix] = (S.counters[prefix] ?? (APP.refBase?.[prefix] || 0)) + 1);
+  return `${prefix}/${today.getFullYear()}/${String(n).padStart(4, '0')}`;
+}
+// Working days: Maldives weekend is Friday and Saturday
+function addWorkDays(from, n) {
+  const d = new Date(from); let added = 0;
+  while (added < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 5 && w !== 6) added++; }
+  return d.toISOString();
+}
+function duePill(due, doneAt) {
+  if (doneAt) return `<span class="pill s-done">Done ${fmtDate(doneAt)}</span>`;
+  const days = Math.round((new Date(due) - today) / 86400000);
+  if (days < 0) return `<span class="pill s-need">Overdue ${-days} d</span>`;
+  if (days <= 2) return `<span class="pill s-prog">Due ${days === 0 ? 'today' : 'in ' + days + ' d'}</span>`;
+  return `<span class="pill s-off">Due ${fmtDate(due)}</span>`;
+}
+const STORE_KEY = () => `bml-pc-proto-v3-${APP.key}`;
+function save() { try { localStorage.setItem(STORE_KEY(), JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }
+function loadSaved() { try { const v = localStorage.getItem(STORE_KEY()); if (v) Object.assign(S, JSON.parse(v)); } catch (e) { /* storage unavailable */ } }
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function openModal(html) { $('#modal').innerHTML = `<div class="scrim" data-act="closeModalBg"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal input, #modal textarea, #modal select, #modal button'); f && f.focus(); }
+function closeModal() { $('#modal').innerHTML = ''; }
+
+function render() {
+  if (!UI.tab) UI.tab = Object.fromEntries(Object.entries(APP.tabs).map(([k, v]) => [k, v[0][0]]));
+  document.querySelectorAll('.toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === UI.view)));
+  $('#who').innerHTML = APP.who[UI.view];
+  $('#tabs .wrap').innerHTML = APP.tabs[UI.view].map(([id, label]) => {
+    const n = APP.badge ? APP.badge(UI.view, id) : '';
+    return `<button role="tab" aria-selected="${UI.tab[UI.view] === id}" data-act="tab" data-id="${id}">${esc(label)}${n ? ` (${n})` : ''}</button>`;
+  }).join('');
+  $('#main .wrap').innerHTML = APP.views[UI.view][UI.tab[UI.view]]();
+  save();
+}
+
+const ACTIONS = {
+  tab: d => { UI.tab[UI.view] = d.id; render(); window.scrollTo({ top: 0 }); },
+  closeModal: () => closeModal(),
+  resetData: () => { try { localStorage.removeItem(STORE_KEY()); } catch (e) {} location.reload(); },
+  closeModalBg: (d, el, e) => { if (e.target === el) closeModal(); },
+};
+
+document.addEventListener('click', e => {
+  const v = e.target.closest('.toggle button');
+  if (v) { UI.view = v.dataset.view; render(); window.scrollTo({ top: 0 }); toast(`Switched to ${VIEW_NAMES[v.dataset.view]} view`); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const fn = ACTIONS[a.dataset.act] || APP.actions[a.dataset.act];
+  if (fn) { fn(a.dataset, a, e); }
+});
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-form]');
+  if (!f) return;
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f, e.submitter).entries());
+  APP.forms[f.dataset.form](data, f);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Employee Voice — concerns, grievances and sexual harassment reports with routing and policy timelines
+const STAFF = { name: 'Aishath Nazla', id: 'EMP 10432', title: 'Senior Officer', dept: 'Retail Banking – Hulhumalé Branch', div: 'Retail Banking' };
+const HR_ME = 'Mariyam Shifa (HR)';
+const HR_2 = 'Ahmed Ilham (HR)';
+const DIV_LEADS = { 'Retail Banking': { chief: 'Chief Retail Officer', director: 'Director, Retail Banking' }, 'Operations': { chief: 'Chief Operating Officer', director: 'Director, Operations' }, 'Corporate Services': { chief: 'Chief Corporate Services Officer', director: 'Director, Corporate Services' } };
+const SH = 'Sexual harassment';
+const LEADERS = { chief: { name: 'Hassan Waheed', role: 'Division Chief', title: 'Chief Retail Officer' }, director: { name: 'Shaheema Ali', role: 'Division Director', title: 'Director, Retail Banking' } };
+const S = {
+  categories: [
+    { name: 'Workplace behaviour', help: 'Conduct by a colleague or manager that concerns you.', routing: 'any', active: true },
+    { name: SH, help: 'Unwelcome sexual conduct, comments or contact. Goes to HR only and is handled within set timelines.', routing: 'hr', active: true },
+    { name: 'Health and safety', help: 'Unsafe conditions, equipment or practices.', routing: 'any', active: true },
+    { name: 'Policy or process concern', help: 'A rule or process that is unclear, unfair or not followed.', routing: 'any', active: true },
+    { name: 'Workload and wellbeing', help: 'Pressure, hours or support at work.', routing: 'any', active: true },
+    { name: 'Suggestion', help: 'An idea to improve how we work.', routing: 'any', active: true },
+  ],
+  // Working-day timelines per case type. Sample values: HR sets these to match policy.
+  policies: {
+    'Formal grievance': { timebound: true, ack: 2, investigate: 10, outcome: 20 },
+    'Informal concern': { timebound: false, ack: 3, investigate: 0, outcome: 15 },
+    [SH]: { timebound: true, ack: 1, investigate: 7, outcome: 15 },
+  },
+  reports: [
+    { ref: 'EV/2026/0027', cat: 'Workload and wellbeing', confidential: false, staff: STAFF.name, sid: STAFF.id, div: STAFF.div, route: ['HR', 'Division Chief'], formal: false, askedFormal: false, status: 'Under review', at: daysAgo(8), ackAt: daysAgo(7), seen: { chief: daysAgo(6) }, leader: [{ roleKey: 'chief', role: 'Division Chief', by: 'Hassan Waheed', t: 'Two tellers are being transferred from Malé branch from next month.', at: daysAgo(5) }], text: 'Our branch has been short of two tellers for six weeks. The team is regularly staying past 6 pm to close the day.', msgs: [{ by: 'HR', t: 'Thank you for raising this. We have shared the staffing gap with the Chief Retail Officer and will update you by Thursday.', kind: 'update' }], notes: [], assignee: HR_ME },
+    { ref: 'EV/2026/0029', cat: 'Workplace behaviour', confidential: true, staff: STAFF.name, sid: STAFF.id, div: STAFF.div, route: ['HR'], formal: true, askedFormal: true, status: 'Information needed', at: daysAgo(6), ackAt: daysAgo(5), text: 'A supervisor in our unit regularly raises his voice at junior staff in front of customers.', msgs: [{ by: 'HR', t: 'Could you tell us roughly how often this happens and whether anyone else saw it?', kind: 'info' }], notes: [{ by: HR_ME, t: 'Similar to an earlier informal concern in the same unit. Treat as formal grievance.' }], assignee: HR_ME },
+    { ref: 'EV/2026/0031', cat: SH, confidential: true, staff: 'Hawwa Shazna', sid: 'EMP 11873', div: 'Operations', route: ['HR'], formal: true, askedFormal: true, status: 'Received', at: daysAgo(1), text: 'A colleague in my section keeps commenting on my appearance and touched my shoulder after I asked him to stop.', msgs: [], notes: [] },
+    { ref: 'EV/2026/0032', cat: 'Health and safety', confidential: false, staff: 'Ali Zahir', sid: 'EMP 09102', div: 'Corporate Services', route: ['HR', 'Division Chief', 'Division Director'], formal: false, askedFormal: false, status: 'Received', at: daysAgo(1), text: 'The emergency exit at the back of the head office archive room is blocked by boxes.', msgs: [], notes: [] },
+    { ref: 'EV/2026/0030', cat: 'Policy or process concern', confidential: true, staff: 'Mohamed Shiyam', sid: 'EMP 07733', div: 'Retail Banking', route: ['HR', 'Division Director'], formal: false, askedFormal: false, status: 'Under review', at: daysAgo(4), ackAt: daysAgo(3), text: 'Branch staff are asked to open accounts without completing the KYC checklist when queues are long.', msgs: [{ by: 'HR', t: 'Thank you. We have shared this with the Director, Retail Banking and Compliance.', kind: 'update' }], notes: [], assignee: HR_ME, leader: [] },
+    { ref: 'EV/2026/0033', cat: 'Policy or process concern', confidential: true, staff: 'Ismail Faisal', sid: 'EMP 06654', div: 'Operations', route: ['HR'], formal: true, askedFormal: true, status: 'Acknowledged', at: daysAgo(14), ackAt: daysAgo(13), text: 'Overtime approvals in our department take more than a month, so pay is delayed.', msgs: [{ by: 'HR', t: 'Received. We are treating this as a formal grievance and will come back with an outcome within the policy timeline.', kind: 'update' }], notes: [], assignee: HR_ME },
+    { ref: 'EV/2026/0018', cat: 'Suggestion', confidential: false, staff: 'Hawwa Raufa', sid: 'EMP 12011', div: 'Retail Banking', route: ['HR'], formal: false, askedFormal: false, status: 'Outcome issued', at: daysAgo(20), ackAt: daysAgo(19), closedAt: daysAgo(12), text: 'Could branch staff swap shifts through ESS instead of paper forms?', msgs: [{ by: 'HR', t: 'Shared with the ESS team and added to their plan for next year.', kind: 'outcome' }], notes: [], rating: 4, outcome: 'Shared with the ESS team and added to their plan for next year.' },
+  ],
+  sealedLog: [],
+  sel: null, editCat: null,
+};
+const statusClass = { 'Received': 's-new', 'Acknowledged': 's-new', 'Under review': 's-prog', 'Information needed': 's-need', 'Outcome issued': 's-done', 'Referred to ER case': 's-off' };
+const byRef = ref => S.reports.find(r => r.ref === ref);
+const catOf = name => S.categories.find(c => c.name === name);
+const typeOf = r => r.cat === SH ? SH : r.formal ? 'Formal grievance' : 'Informal concern';
+const isOpen = r => !['Outcome issued', 'Referred to ER case'].includes(r.status);
+function milestones(r) {
+  const p = S.policies[typeOf(r)];
+  if (!p.timebound) return [];
+  const m = [{ label: 'Acknowledge', due: addWorkDays(r.at, p.ack), done: r.ackAt }];
+  if (p.investigate) m.push({ label: 'Complete review or investigation', due: addWorkDays(r.at, p.investigate), done: r.reviewedAt || r.closedAt });
+  m.push({ label: 'Issue outcome', due: addWorkDays(r.at, p.outcome), done: r.closedAt });
+  return m;
+}
+const overdue = r => isOpen(r) && milestones(r).some(m => !m.done && new Date(m.due) < today);
+const routeText = r => r.route.map(x => x === 'HR' ? 'HR' : `${x} (${DIV_LEADS[r.div]?.[x === 'Division Chief' ? 'chief' : 'director'] || r.div})`).join(', ');
+
+function staffNew() {
+  return `<div class="head"><div><h2>Raise a concern</h2><p class="muted">Tell HR about something at work. You can follow up and message HR here.</p></div></div>
+  <form class="panel" data-form="newReport" id="report-form">
+    <label>What is it about?<select id="v-cat" name="cat" required data-live="cat"><option value="">Choose a category</option>${S.categories.filter(c => c.active).map(c => `<option>${esc(c.name)}</option>`).join('')}</select><span class="hint" id="cat-help">Pick the closest match. HR can change it later.</span></label>
+    <div class="callout" id="sh-note" hidden><b>Sexual harassment reports go to HR only.</b> HR acknowledges within ${S.policies[SH].ack} working day and keeps the report confidential. If you are in danger now, contact Security or the police.</div>
+    <fieldset class="panel" style="padding:12px;gap:8px" id="route-set"><legend class="small" style="font-weight:600">Who should receive it?</legend>
+      <label class="check"><input type="checkbox" checked disabled> HR (always included)</label>
+      <label class="check"><input type="checkbox" name="chief" id="v-chief"> Division Chief, ${esc(DIV_LEADS[STAFF.div].chief)}</label>
+      <label class="check"><input type="checkbox" name="director" id="v-director"> Division Director, ${esc(DIV_LEADS[STAFF.div].director)}</label>
+    </fieldset>
+    <fieldset class="panel" style="padding:12px;gap:8px"><legend class="small" style="font-weight:600">Your name</legend>
+      <label class="check"><input type="radio" name="mode" value="named" checked> <span><b>Share my name</b><br><span class="hint">The people handling this see who you are and can contact you directly.</span></span></label>
+      <label class="check"><input type="radio" name="mode" value="confidential"> <span><b>Keep my name confidential</b><br><span class="hint">The people handling this see a reference number, not your name. You can still message HR here.</span></span></label>
+    </fieldset>
+    <label class="check"><input type="checkbox" name="formal" id="v-formal"> <span>I want this handled as a <b>formal grievance</b><br><span class="hint">Formal grievances follow the grievance policy and its timelines. HR confirms how it is handled.</span></span></label>
+    <label>Describe the concern<span class="hint">What happened, where and when, and who was involved.</span><textarea id="v-text" name="text" required style="min-height:130px"></textarea></label>
+    <label>Attachments (optional)<input id="v-file" type="file" name="file" multiple></label>
+    <div class="btns"><button class="btn primary">Submit</button></div>
+  </form>`;
+}
+function staffMine() {
+  const mine = S.reports.filter(r => r.sid === STAFF.id);
+  if (!mine.length) return `<div class="empty">You have not raised any concerns.</div>`;
+  return `<h2>My concerns</h2>` + mine.map(r => {
+    const ms = milestones(r); const next = ms.find(m => !m.done);
+    return `<div class="panel">
+    <div class="head"><div><h3>${esc(r.cat)}</h3><p class="mono muted">${r.ref} · ${fmtDate(r.at)}</p></div>${pill(r.status === 'Referred to ER case' ? 'Under review' : r.status)}</div>
+    <dl class="kv"><dt>Sent to</dt><dd>${esc(routeText(r))}</dd><dt>Your name</dt><dd>${r.confidential ? 'Kept confidential' : 'Shared'}</dd><dt>Handled as</dt><dd>${typeOf(r)}</dd>${next && isOpen(r) ? `<dt>Next step</dt><dd>${next.label} by ${fmtDate(next.due)}</dd>` : ''}</dl>
+    <p>${esc(r.text)}</p>
+    ${r.msgs.length ? `<div class="thread">${r.msgs.map(m => `<div class="msg ${m.by === 'Staff' ? 'me' : ''}"><div class="by">${m.by === 'HR' ? (m.kind === 'outcome' ? 'People & Culture · Outcome' : 'People & Culture') : 'You'}</div>${esc(m.t)}</div>`).join('')}</div>` : ''}
+    ${isOpen(r) ? `<form data-form="staffMsg" data-ref="${r.ref}" class="fields"><label>Message HR<textarea id="m-${r.ref.replaceAll('/', '-')}" name="t" required></textarea></label><div class="btns"><button class="btn ${r.status === 'Information needed' ? 'primary' : ''}">Send</button></div></form>` : r.status === 'Outcome issued' ? `
+      <div><p class="small" style="font-weight:600">How well was this handled?</p><div class="stars" style="margin-top:6px">${[1, 2, 3, 4, 5].map(n => `<button aria-pressed="${r.rating === n}" data-act="rate" data-ref="${r.ref}" data-n="${n}" aria-label="${n} of 5">${n}</button>`).join('')}</div></div>` : ''}
+  </div>`;
+  }).join('');
+}
+
+function mgrInbox() {
+  const role = S.leadRole || 'chief'; const L = LEADERS[role];
+  const mine = S.reports.filter(r => r.div === 'Retail Banking' && r.route.includes(L.role));
+  return `<div class="head"><div><h2>Reports sent to you</h2><p class="muted">Reports from your division where the reporter or HR chose to include the ${L.role}. HR handles every report; you can confirm you have seen it and send your response to HR.</p></div>
+    <div class="subtoggle" role="group" aria-label="Viewing as"><button type="button" data-act="leadRole" data-role="chief" aria-pressed="${role === 'chief'}">Division Chief</button><button type="button" data-act="leadRole" data-role="director" aria-pressed="${role === 'director'}">Division Director</button></div></div>
+    ${mine.length ? mine.map(r => { const ms = milestones(r); const next = ms.find(m => !m.done); const seen = r.seen && r.seen[role];
+      return `<div class="panel"><div class="head"><div><h3>${esc(r.cat)}</h3><p class="mono muted">${r.ref} · received ${fmtDate(r.at)}</p></div>${pill(r.status)}</div>
+      <dl class="kv"><dt>Reporter</dt><dd>${r.confidential ? '<span class="pill s-off">Confidential</span>' : `${esc(r.staff)} · <span class="mono">${esc(r.sid)}</span>`}</dd><dt>Handled as</dt><dd>${typeOf(r)}</dd><dt>HR officer</dt><dd>${esc(r.assignee || 'Being assigned')}</dd>${next && isOpen(r) ? `<dt>Next step</dt><dd>${next.label} by ${fmtDate(next.due)}</dd>` : ''}</dl>
+      <div class="callout info">${esc(r.text)}</div>
+      ${r.msgs.filter(m => m.kind === 'outcome').map(m => `<div class="msg"><div class="by">HR outcome</div>${esc(m.t)}</div>`).join('')}
+      ${(r.leader || []).filter(x => x.roleKey === role).map(x => `<div class="msg me"><div class="by">Your response to HR · ${fmtDate(x.at)}</div>${esc(x.t)}</div>`).join('')}
+      ${isOpen(r) ? `<form data-form="leadMsg" data-ref="${r.ref}" class="fields"><label>Response to HR<span class="hint">Only HR sees this. Do not contact the reporter directly about the report.</span><textarea id="ld-${r.ref.replaceAll('/', '-')}" name="t" required></textarea></label><div class="btns">${seen ? '' : `<button type="button" class="btn" data-act="leadSeen" data-ref="${r.ref}">Mark as seen</button>`}<button class="btn primary">Send to HR</button></div></form>` : ''}
+      ${seen ? `<p class="small muted">You marked this as seen on ${fmtDate(seen)}.</p>` : ''}</div>`; }).join('') : '<div class="empty">No reports have been sent to you.</div>'}
+    <p class="viewnote"><span class="vchip">Not shown here</span> Sexual harassment reports, internal HR notes and a confidential reporter's name.</p>`;
+}
+function hrInbox() {
+  const f = S.filter || 'Open';
+  const list0 = S.reports.filter(r => f === 'All' || (f === 'Open' ? isOpen(r) : f === 'Overdue' ? overdue(r) : typeOf(r) === f));
+  const r = byRef(S.sel) || list0[0] || S.reports[0];
+  S.sel = r && r.ref;
+  const list = `<div class="list">${list0.map(x => `<button class="row" data-act="sel" data-ref="${x.ref}" aria-current="${x.ref === S.sel}"><span class="t">${esc(x.cat)}</span>${pill(x.status)}<span class="m"><span class="mono">${x.ref}</span> · ${x.confidential ? 'Confidential reporter' : esc(x.staff)} · ${typeOf(x)}${overdue(x) ? ' · <b style="color:var(--red)">Overdue</b>' : ''}</span></button>`).join('') || '<div class="empty">Nothing here.</div>'}</div>`;
+  const open = S.reports.filter(isOpen);
+  return `<div class="head"><div><h2>Inbox</h2><p class="muted">${open.length} open · ${open.filter(overdue).length} overdue · ${open.filter(x => x.cat === SH).length} sexual harassment</p></div>
+    <label style="min-width:200px">Show<select id="inbox-filter" data-live="filter">${['Open', 'Overdue', 'Formal grievance', 'Informal concern', SH, 'All'].map(o => `<option ${o === f ? 'selected' : ''}>${o}</option>`).join('')}</select></label></div>
+    <div class="split">${list}${r ? hrDetail(r) : ''}</div>`;
+}
+function hrDetail(r) {
+  const opened = S.sealedLog.find(l => l.ref === r.ref && l.status === 'Opened');
+  const pending = S.sealedLog.find(l => l.ref === r.ref && l.status === 'Awaiting approval');
+  const who = r.confidential
+    ? (opened ? `${esc(r.staff)} · <span class="mono">${esc(r.sid)}</span> <span class="pill s-need">Identity opened</span>` : `<span class="pill s-off">Handled anonymously</span>`)
+    : `${esc(r.staff)} · <span class="mono">${esc(r.sid)}</span>`;
+  const thread = [...r.msgs.map(m => ({ ...m, k: 'msg' })), ...r.notes.map(n => ({ ...n, k: 'note' })), ...(r.leader || []).map(n => ({ ...n, k: 'lead' }))];
+  const ms = milestones(r); const hrOnly = catOf(r.cat)?.routing === 'hr';
+  return `<div class="panel"><div class="head"><div><h3 class="mono">${r.ref}</h3><p class="muted small">Received ${fmtDate(r.at)}</p></div>${pill(r.status)}</div>
+    <dl class="kv"><dt>Category</dt><dd>${esc(r.cat)}</dd><dt>Reporter</dt><dd>${who}</dd><dt>Division</dt><dd>${esc(r.div)}</dd><dt>Sent to</dt><dd>${esc(routeText(r))}${(r.seen && Object.keys(r.seen).length) ? `<br><span class="small muted">Seen by ${Object.entries(r.seen).map(([k, v]) => `${k === 'chief' ? 'Division Chief' : 'Division Director'} ${fmtDate(v)}`).join(', ')}</span>` : ''}</dd><dt>Handled as</dt><dd><b>${typeOf(r)}</b>${r.askedFormal && !r.formal ? ' <span class="muted small">(reporter asked for formal)</span>' : ''}</dd><dt>Assigned to</dt><dd>${esc(r.assignee || 'Unassigned')}</dd>${r.erRef ? `<dt>ER case</dt><dd class="mono">${r.erRef}</dd>` : ''}${r.rating ? `<dt>Reporter rating</dt><dd>${r.rating} of 5</dd>` : ''}</dl>
+    ${ms.length ? `<div class="steps">${ms.map(m => `<div class="step"><span>${m.label}</span>${duePill(m.due, m.done)}</div>`).join('')}</div>` : `<p class="small muted">Not timebound under the current policy settings.</p>`}
+    <div class="callout info">${esc(r.text)}</div>
+    ${thread.length ? `<div class="thread">${thread.map(m => m.k === 'lead' ? `<div class="msg" style="border:1px solid var(--warn);background:var(--warn-soft)"><div class="by">${esc(m.role)} · ${esc(m.by)} · to HR only</div>${esc(m.t)}</div>` : m.k === 'note' ? `<div class="msg note"><div class="by">Internal note · ${esc(m.by)} · not visible to the reporter</div>${esc(m.t)}</div>` : `<div class="msg ${m.by === 'HR' ? 'me' : ''}"><div class="by">${m.by === 'HR' ? ({ update: 'HR update', info: 'HR question', outcome: 'HR outcome' }[m.kind] || 'HR') : 'Reporter'}</div>${esc(m.t)}</div>`).join('')}</div>` : ''}
+    ${isOpen(r) ? `
+    <div class="btns">${r.status === 'Received' ? `<button class="btn primary" data-act="ack" data-ref="${r.ref}">Acknowledge</button>` : ''}${r.cat !== SH ? `<button class="btn" data-act="toggleFormal" data-ref="${r.ref}">${r.formal ? 'Handle as informal' : 'Handle as formal grievance'}</button>` : ''}${!hrOnly ? `<button class="btn" data-act="routeEdit" data-ref="${r.ref}">Change who receives it</button>` : ''}</div>
+    <form data-form="hrMsg" data-ref="${r.ref}" style="display:flex;flex-direction:column;gap:8px"><label>Write<textarea id="h-${r.ref.replaceAll('/', '-')}" name="t" required></textarea></label>
+      <div class="btns"><button class="btn primary" name="kind" value="update">Post update</button><button class="btn" name="kind" value="info">Ask for information</button><button class="btn" name="kind" value="note">Add internal note</button><button class="btn dark" name="kind" value="outcome">Issue outcome and close</button></div></form>
+    <div class="btns"><button class="btn" data-act="refer" data-ref="${r.ref}">Open an ER case</button></div>` : `<p class="small muted">${esc(r.outcome || '')}</p>`}
+    ${r.confidential && !opened ? `<div class="callout"><b>Confidential reporter.</b> ${pending ? `Request by ${esc(pending.by)} is waiting for a second HR approval.<div class="btns" style="margin-top:8px"><button class="btn dark sm" data-act="approveOpen" data-ref="${r.ref}">Approve as ${HR_2}</button><button class="btn sm" data-act="rejectOpen" data-ref="${r.ref}">Reject</button></div>` : `The reporter's identity is shown only with a recorded reason and a second HR user's approval. Every opening is logged.<div class="btns" style="margin-top:8px"><button class="btn sm" data-act="reqOpen" data-ref="${r.ref}">Request identity</button></div>`}</div>` : ''}
+  </div>`;
+}
+function hrSettings() {
+  const routeLabel = { any: 'HR, plus Division Chief or Director if the reporter chooses', hr: 'HR only' };
+  return `<div class="head"><div><h2>Settings</h2><p class="muted">Changes apply to new reports straight away. Sample timelines: set them to match the grievance and harassment policies.</p></div></div>
+  <div class="panel"><h3>Timelines by case type</h3><p class="muted small">Working days, excluding Friday and Saturday. Timebound cases show due dates and appear as overdue when late.</p>
+  <form data-form="savePolicy"><div class="tablewrap"><table><thead><tr><th>Case type</th><th>Timebound</th><th class="num">Acknowledge</th><th class="num">Review or investigation</th><th class="num">Outcome</th></tr></thead><tbody>
+  ${Object.entries(S.policies).map(([k, p], i) => `<tr><td><b>${esc(k)}</b></td><td><input type="checkbox" name="tb_${i}" aria-label="${esc(k)} timebound" ${p.timebound ? 'checked' : ''} ${k === SH ? 'disabled' : ''}></td>${['ack', 'investigate', 'outcome'].map(f => `<td class="num"><input type="number" min="0" max="90" name="${f}_${i}" value="${p[f]}" style="width:80px" aria-label="${esc(k)} ${f} days"></td>`).join('')}</tr>`).join('')}
+  </tbody></table></div><div class="btns" style="margin-top:10px"><button class="btn primary">Save timelines</button></div></form>
+  <p class="small muted">Sexual harassment is always timebound and always goes to HR only.</p></div>
+  <div class="head"><h3>Categories</h3><button class="btn" data-act="addCat">Add category</button></div>
+  <div class="tablewrap"><table><thead><tr><th>Category</th><th>Help text shown to staff</th><th>Who receives it</th><th>Status</th><th></th></tr></thead><tbody>
+  ${S.categories.map((c, i) => S.editCat === i ? `<tr><td colspan="5"><form data-form="saveCat" data-i="${i}" class="fields"><label>Category<input id="c-name" name="name" value="${esc(c.name)}" required ${c.name === SH ? 'readonly' : ''}></label><label>Help text<input id="c-help" name="help" value="${esc(c.help)}"></label><label>Who receives it<select id="c-route" name="routing" ${c.name === SH ? 'disabled' : ''}>${Object.entries(routeLabel).map(([k, v]) => `<option value="${k}" ${c.routing === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label><div class="btns" style="align-self:end"><button class="btn primary sm">Save</button><button type="button" class="btn sm" data-act="editCat" data-i="">Cancel</button></div></form></td></tr>` : `<tr><td><b>${esc(c.name)}</b></td><td class="muted">${esc(c.help)}</td><td>${routeLabel[c.routing]}</td><td>${pill(c.active ? 'Active' : 'Retired')}</td><td><div class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-act="editCat" data-i="${i}">Edit</button>${c.name !== SH ? `<button class="btn sm" data-act="toggleCat" data-i="${i}">${c.active ? 'Retire' : 'Restore'}</button>` : ''}</div></td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="panel"><h3>Identity requests log</h3>${S.sealedLog.length ? `<div class="tablewrap"><table><thead><tr><th>Report</th><th>Requested by</th><th>Reason</th><th>Decided by</th><th>Status</th></tr></thead><tbody>${S.sealedLog.map(l => `<tr><td class="mono">${l.ref}</td><td>${esc(l.by)}</td><td>${esc(l.reason)}</td><td>${esc(l.approver || '–')}</td><td>${esc(l.status)}</td></tr>`).join('')}</tbody></table></div>` : `<p class="muted small">No identity has been requested.</p>`}</div>
+  <div class="panel"><h3>Microsoft 365</h3><p class="muted small">Later phase: Outlook and Teams notices to HR, Division Chiefs and Directors, and Entra ID sign-in. Not part of this CR.</p></div>`;
+}
+function hrReport() {
+  const sample = { 'Workplace behaviour': 14, [SH]: 2, 'Health and safety': 6, 'Policy or process concern': 11, 'Workload and wellbeing': 9, 'Suggestion': 3 };
+  const rows = S.categories.map(c => [c.name, S.reports.filter(r => r.cat === c.name).length + (sample[c.name] || 0)]);
+  const max = Math.max(...rows.map(r => r[1]), 1);
+  const open = S.reports.filter(isOpen);
+  return `<h2>Report</h2><p class="muted small">Sample figures, year to date. Groups with fewer than 5 reports are hidden to protect reporters.</p>
+  <div class="stats"><div class="stat"><div class="n">${rows.reduce((s, r) => s + r[1], 0)}</div><div class="l">Reports received</div></div><div class="stat"><div class="n">${open.length}</div><div class="l">Open now</div></div><div class="stat"><div class="n">${open.filter(overdue).length}</div><div class="l">Overdue against policy</div></div><div class="stat"><div class="n">94%</div><div class="l">Formal grievances closed on time</div></div></div>
+  <div class="panel"><h3>Reports by category</h3><div class="bars">${rows.map(([n, c]) => c < 5 ? `<div class="bar-row"><span>${esc(n)}</span><span class="muted small">Fewer than 5, hidden</span><span class="v">–</span></div>` : `<div class="bar-row"><span>${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${c / max * 100}%"></div></div><span class="v">${c}</span></div>`).join('')}</div></div>`;
+}
+
+const APP = {
+  key: 'voice', refBase: { EV: 41, ER: 31 },
+  statusClass: { ...statusClass, Active: 's-done', Retired: 's-off' },
+  get who() { const L = LEADERS[S.leadRole || 'chief']; return { staff: `<span>Signed in as <b>${STAFF.name}</b></span><span>· ${STAFF.title}, ${STAFF.dept}</span>`, manager: `<span>Signed in as <b>${L.name}</b></span><span>· ${L.title}</span>`, hr: `<span>Signed in as <b>${HR_ME}</b></span><span>· People &amp; Culture</span>` }; },
+  tabs: { staff: [['new', 'Raise a concern'], ['mine', 'My concerns']], manager: [['inbox', 'Sent to me']], hr: [['inbox', 'Inbox'], ['settings', 'Settings'], ['report', 'Report']] },
+  badge: (v, id) => v === 'manager' ? S.reports.filter(r => r.div === 'Retail Banking' && r.route.includes(LEADERS[S.leadRole || 'chief'].role) && isOpen(r) && !(r.seen && r.seen[S.leadRole || 'chief'])).length : v === 'hr' && id === 'inbox' ? S.reports.filter(r => r.status === 'Received').length : v === 'staff' && id === 'mine' ? S.reports.filter(r => r.sid === STAFF.id && r.status === 'Information needed').length : 0,
+  views: { staff: { new: staffNew, mine: staffMine }, manager: { inbox: mgrInbox }, hr: { inbox: hrInbox, settings: hrSettings, report: hrReport } },
+  actions: {
+    sel: d => { S.sel = d.ref; render(); },
+    leadRole: d => { S.leadRole = d.role; render(); },
+    leadSeen: d => { const r = byRef(d.ref); r.seen = r.seen || {}; r.seen[S.leadRole || 'chief'] = today.toISOString(); render(); toast('Marked as seen. HR can see this'); },
+    rate: d => { byRef(d.ref).rating = +d.n; render(); toast('Thank you for your rating'); },
+    ack: d => { const r = byRef(d.ref); r.status = 'Acknowledged'; r.ackAt = today.toISOString(); r.assignee = r.assignee || HR_ME; r.msgs.push({ by: 'HR', t: `We have received your report ${r.ref} and are looking into it.`, kind: 'update' }); render(); toast('Acknowledged; the reporter has been told'); },
+    toggleFormal: d => { const r = byRef(d.ref); r.formal = !r.formal; r.notes.push({ by: HR_ME, t: r.formal ? 'Now handled as a formal grievance.' : 'Now handled as an informal concern.' }); render(); toast(r.formal ? 'Handled as formal grievance; policy timelines apply' : 'Handled as informal concern'); },
+    routeEdit: d => { const r = byRef(d.ref); openModal(`<form data-form="route" data-ref="${r.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Who receives it</h2><label class="check"><input type="checkbox" checked disabled> HR (always included)</label><label class="check"><input type="checkbox" name="chief" ${r.route.includes('Division Chief') ? 'checked' : ''}> Division Chief, ${esc(DIV_LEADS[r.div]?.chief || r.div)}</label><label class="check"><input type="checkbox" name="director" ${r.route.includes('Division Director') ? 'checked' : ''}> Division Director, ${esc(DIV_LEADS[r.div]?.director || r.div)}</label><p class="muted small">They see the report in their Manager view and respond to HR. A confidential reporter's name is never shared with them.</p><div class="btns"><button class="btn primary">Save</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`); },
+    refer: d => { const r = byRef(d.ref); openModal(`<form data-form="refer" data-ref="${d.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Open an ER case</h2><p class="muted">Creates a case in People Manager (HR case management) and links it to ${r.ref}.</p><label>Case type<select id="r-type" name="type"><option>${r.formal || r.cat === SH ? (r.cat === SH ? SH : 'Grievance (formal)') : 'Grievance (informal)'}</option><option>Disciplinary</option><option>Grievance (formal)</option><option>Grievance (informal)</option></select></label><label>Reason<textarea id="r-reason" name="reason" required></textarea></label><div class="btns"><button class="btn primary">Open case</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`); },
+    reqOpen: d => openModal(`<form data-form="reqOpen" data-ref="${d.ref}" style="display:flex;flex-direction:column;gap:12px"><h2>Request reporter identity</h2><p class="muted">A second HR user must approve. The request, reason and decision are logged.</p><label>Reason<textarea id="o-reason" name="reason" required></textarea></label><div class="btns"><button class="btn primary">Send for approval</button><button class="btn" type="button" data-act="closeModal">Cancel</button></div></form>`),
+    approveOpen: d => { const l = S.sealedLog.find(x => x.ref === d.ref && x.status === 'Awaiting approval'); l.status = 'Opened'; l.approver = HR_2; render(); toast('Identity shown and logged'); },
+    rejectOpen: d => { const l = S.sealedLog.find(x => x.ref === d.ref && x.status === 'Awaiting approval'); l.status = 'Rejected'; l.approver = HR_2; render(); toast('Request rejected and logged'); },
+    addCat: () => { S.categories.push({ name: 'New category', help: '', routing: 'any', active: true }); S.editCat = S.categories.length - 1; render(); },
+    editCat: d => { S.editCat = d.i === '' ? null : +d.i; render(); },
+    toggleCat: d => { const c = S.categories[+d.i]; c.active = !c.active; render(); toast(c.active ? 'Category restored' : 'Category retired from the staff form'); },
+  },
+  forms: {
+    leadMsg: (data, f) => { const role = S.leadRole || 'chief'; const L = LEADERS[role]; const r = byRef(f.dataset.ref); r.leader = r.leader || []; r.leader.push({ roleKey: role, role: L.role, by: L.name, t: data.t, at: today.toISOString() }); r.seen = r.seen || {}; r.seen[role] = r.seen[role] || today.toISOString(); render(); toast('Response sent to HR'); },
+    newReport: data => {
+      const ref = makeRef('EV'); const sh = data.cat === SH; const hrOnly = catOf(data.cat)?.routing === 'hr';
+      const route = ['HR', ...(!hrOnly && data.chief ? ['Division Chief'] : []), ...(!hrOnly && data.director ? ['Division Director'] : [])];
+      S.reports.unshift({ ref, cat: data.cat, confidential: data.mode === 'confidential', staff: STAFF.name, sid: STAFF.id, div: STAFF.div, route, formal: sh || !!data.formal, askedFormal: !!data.formal, status: 'Received', at: today.toISOString(), text: data.text, msgs: [], notes: [] });
+      UI.tab.staff = 'mine'; render(); toast(`Submitted. Your reference is ${ref}`);
+    },
+    staffMsg: (data, f) => { const r = byRef(f.dataset.ref); r.msgs.push({ by: 'Staff', t: data.t }); if (r.status === 'Information needed') r.status = 'Under review'; render(); toast('Message sent to HR'); },
+    hrMsg: (data, f) => {
+      const kind = data.kind || 'update'; const r = byRef(f.dataset.ref); r.assignee = r.assignee || HR_ME;
+      if (!r.ackAt) r.ackAt = today.toISOString();
+      if (kind === 'note') { r.notes.push({ by: HR_ME, t: data.t }); toast('Internal note added'); }
+      else if (kind === 'outcome') { r.msgs.push({ by: 'HR', t: data.t, kind }); r.status = 'Outcome issued'; r.outcome = data.t; r.closedAt = today.toISOString(); toast('Outcome issued; report closed'); }
+      else { r.msgs.push({ by: 'HR', t: data.t, kind }); r.status = kind === 'info' ? 'Information needed' : 'Under review'; toast(kind === 'info' ? 'Question sent to the reporter' : 'Update posted to the reporter'); }
+      render();
+    },
+    route: (data, f) => { const r = byRef(f.dataset.ref); r.route = ['HR', ...(data.chief ? ['Division Chief'] : []), ...(data.director ? ['Division Director'] : [])]; r.notes.push({ by: HR_ME, t: `Recipients changed to: ${r.route.join(', ')}.` }); closeModal(); render(); toast('Recipients updated'); },
+    refer: (data, f) => { const r = byRef(f.dataset.ref); r.erRef = makeRef('ER'); r.status = 'Referred to ER case'; r.outcome = `Opened ${data.type} case ${r.erRef}: ${data.reason}`; r.notes.push({ by: HR_ME, t: r.outcome }); closeModal(); render(); toast(`ER case ${r.erRef} opened`); },
+    reqOpen: (data, f) => { S.sealedLog.push({ ref: f.dataset.ref, by: HR_ME, reason: data.reason, status: 'Awaiting approval' }); closeModal(); render(); toast('Sent for second HR approval'); },
+    saveCat: (data, f) => { const c = S.categories[+f.dataset.i]; c.help = data.help; if (c.name !== SH) { c.name = data.name; c.routing = data.routing; } S.editCat = null; render(); toast('Category saved'); },
+    savePolicy: data => { Object.keys(S.policies).forEach((k, i) => { const p = S.policies[k]; p.timebound = k === SH ? true : !!data['tb_' + i]; ['ack', 'investigate', 'outcome'].forEach(f => { p[f] = Math.max(0, +data[`${f}_${i}`] || 0); }); }); render(); toast('Timelines saved; due dates updated'); },
+  },
+};
+document.addEventListener('change', e => {
+  if (e.target.dataset.live === 'cat') {
+    const c = catOf(e.target.value); const hrOnly = c?.routing === 'hr'; const sh = e.target.value === SH;
+    $('#cat-help').textContent = c?.help || 'Pick the closest match. HR can change it later.';
+    $('#sh-note').hidden = !sh;
+    ['#v-chief', '#v-director'].forEach(s => { const i = $(s); i.disabled = hrOnly; if (hrOnly) i.checked = false; });
+    const fm = $('#v-formal'); fm.disabled = sh; if (sh) fm.checked = true;
+  }
+  if (e.target.dataset.live === 'filter') { S.filter = e.target.value; S.sel = null; render(); }
+});
+
+loadSaved();
+render();
+</script>
